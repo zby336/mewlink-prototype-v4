@@ -1,18 +1,18 @@
-# MewLink — independent working copy
+# MewLink — experimental working copy
 
-This version was approved for GitHub synchronization on 2026-10-30. The source and committed `dist/` match all 60 files in production deployment `dpl_G7w2fPbaZ1fZk7S5AZHg2cZguow3`. See [the approved release and synchronization record](docs/github-sync-2026-10-30.md) and [the latest feature verification report](docs/ux06-delivery.md). Mandatory Care Basics now depend on the two experience answers; full-screen confetti uses two prerendered layers.
+This independent experiment was created on 2026-11-03 from the accepted MewLink version, with the original Git history preserved. The application source and all 60 deployment files are unchanged from approved production deployment `dpl_G7w2fPbaZ1fZk7S5AZHg2cZguow3`. Only experiment links and documentation changed. See [experiment targets and the preserved baseline](docs/experiment-baseline.md).
 
 Earlier development reports describe the synchronization status at their respective checkpoints. This approved release supersedes their “not yet pushed” status.
 
-Public prototype: https://mewlink-design-copy.vercel.app/
+Experimental website: https://mewlink-experiments.vercel.app/
 
-Repository: https://github.com/zby336/mewlink-prototype-v3
+Repository: https://github.com/zby336/mewlink-experiments
 
-Figma working copy: https://www.figma.com/design/mjKHxlL2JUoyMlluQcqZls
+Figma experimental copy: https://www.figma.com/design/7fVfuvgTh5E7zMGg2sDwKj
 
-The Figma file currently contains the earlier editable designs. Synchronization with the approved website is pending: the account's MCP editing quota is exhausted and its existing HTML import plugin fails to start. Do not treat the existing Figma file as the latest website design.
+Figma is a native duplicate of the entire existing editable design, including its components and screen map. The source Figma contained earlier designs; its pre-existing differences from the approved website are also present in this duplicate. Duplication does not claim those differences have been resolved.
 
-This repository belongs to the independent working version. It does not deploy the earlier, different `mewlink` project or the original Netlify site.
+Future experiments belong only in this repository, Vercel project `prj_8ennCAToI4d6FiFzmsOznsrFeBNo` and the new Figma file. The original repository, `mewlink-design-copy` Vercel project and Figma file remain untouched backups. Historical reports below refer to the original accepted version.
 
 ## Approved website release — 2026-10-28
 
