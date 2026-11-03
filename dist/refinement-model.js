@@ -47,6 +47,32 @@
     return out.sort((a,b)=>Date.parse(b.occurredAt)-Date.parse(a.occurredAt));
   }
   function zoneNeeds(zone,options={}){return M.allCats().filter(c=>c.zone===zone).map(c=>({catId:c.id,catName:c.name,photo:c.photo,tnrOk:c.tnrOk===true,zone:c.zone,needs:needs(c.id,options)})).filter(c=>c.needs.length);}
+  // An offer is an intention tied to the currently sourced request, never care.
+  const CHECK_OFFERS_KEY='mewlink-check-offers-v1';
+  function nextRequest(id,options={}){
+    const open=needs(id,options);
+    return rows(id,options).find(r=>open.some(n=>n.sourceIds.includes(r.id)))||null;
+  }
+  function readOffers(){try{const a=JSON.parse(root.localStorage.getItem(CHECK_OFFERS_KEY)||'[]');return Array.isArray(a)?a.filter(o=>o&&typeof o==='object'):[];}catch(_){return [];}}
+  function checkOffer(id,options={}){
+    const request=nextRequest(id,options),viewer=options.viewer||M.CURRENT_USER,now=options.now??Date.now();
+    if(!request)return null;
+    return readOffers().find(o=>o.catId===id&&o.caregiverId===viewer&&o.circleId===D.CIRCLE&&o.requestId===request.id&&Number.isFinite(Date.parse(o.createdAt))&&Date.parse(o.createdAt)<=now)||null;
+  }
+  function setCheckOffer(id,offered,options={}){
+    if(!cat(id))return {ok:false,error:'This cat could not be found.'};
+    const viewer=options.viewer||M.CURRENT_USER,request=nextRequest(id,options);
+    if(offered&&!request)return {ok:false,error:'No current next-visit request is available.'};
+    const existing=checkOffer(id,options);if(offered&&existing)return {ok:true,offer:existing};
+    try{
+      const stored=JSON.parse(root.localStorage.getItem(CHECK_OFFERS_KEY)||'[]');if(!Array.isArray(stored))throw Error('Invalid offer storage');
+      const remaining=stored.filter(o=>!(o?.catId===id&&o.caregiverId===viewer&&o.circleId===D.CIRCLE));
+      const offer=offered?{catId:id,caregiverId:viewer,circleId:D.CIRCLE,requestId:request.id,createdAt:new Date(options.now??Date.now()).toISOString(),source:'prototype-action'}:null;
+      root.localStorage.setItem(CHECK_OFFERS_KEY,JSON.stringify(offer?[...remaining,offer]:remaining));
+      if(root.dispatchEvent)root.dispatchEvent(new Event('mewlink-data-changed'));
+      return {ok:true,offer};
+    }catch(_){return {ok:false,error:'Could not save your offer. Please try again.'};}
+  }
   function notifications(options={}){
     const events=[];
     for(const c of M.allCats())for(const need of needs(c.id,options)){
@@ -64,7 +90,7 @@
       if(!r)continue;
       const later=rows(c.id,options).some(n=>time(n)>time(r)&&resolved(n));if(later)continue;
       const compact=alertCopy(r);
-      out.push({catId:c.id,catName:c.name,...compact,occurredAt:r.occurredAt,sources:[source(r)],demo:r.source==='demo'});
+      out.push({id:'alert-'+r.id,recordId:r.id,catId:c.id,catName:c.name,...compact,occurredAt:r.occurredAt,sources:[source(r)],demo:r.source==='demo'});
     }
     return out.sort((a,b)=>Date.parse(b.occurredAt)-Date.parse(a.occurredAt));
   }
@@ -76,6 +102,21 @@
     if(/not come|did not come|not seen/i.test(text))return {title:'Spot our quiet neighbour? 👀',detail:'Not seen on the last round. Log a sighting if you meet.',tag:'Sighting check'};
     const sentence=text.match(/[^.!?]+[.!?]?/)?.[0]?.trim()||'A new care note is waiting.';
     return {title:'A small check-in 🐾',detail:sentence.length>115?sentence.slice(0,112)+'…':sentence,tag:needLabel(r.next||'',kindFor(r.next||''))||'Check-in'};
+  }
+  const REPORTS_KEY='mewlink-alert-reports-v1';
+  function reportAlert({alertId,message},options={}){
+    message=String(message||'').trim();
+    const alert=alerts(options).find(a=>a.id===alertId);
+    if(!alert)return {ok:false,error:'Choose a current alert.'};
+    if(!message)return {ok:false,error:'Tell us what seems wrong.'};
+    if(message.length>1000)return {ok:false,error:'Keep your report within 1,000 characters.'};
+    try{
+      const stored=JSON.parse(root.localStorage.getItem(REPORTS_KEY)||'[]');
+      if(!Array.isArray(stored))throw Error('Invalid report storage');
+      const report={id:root.crypto?.randomUUID?.()||String(Date.now())+'-'+Math.random().toString(36).slice(2),alertId,recordId:alert.recordId,catId:alert.catId,title:alert.title,alertOccurredAt:alert.occurredAt,message,createdAt:new Date(options.now??Date.now()).toISOString(),source:'prototype-action'};
+      root.localStorage.setItem(REPORTS_KEY,JSON.stringify([...stored,report]));
+      return {ok:true,report};
+    }catch(_){return {ok:false,error:'Could not save on this device. Your report is still here; please try again.'};}
   }
   function facts(id,options={}){
     const c=cat(id);if(!c)return 'No behaviour note recorded yet.';
@@ -108,6 +149,6 @@
   }
   function learningPending(){try{return root.localStorage.getItem('mewlink-learning-required')==='1'&&requiresLearning();}catch(_){return false;}}
   function completeLearning(){try{root.localStorage.setItem(LEARNING_KEY,JSON.stringify({version:1,completedAt:new Date().toISOString()}));return true;}catch(_){return false;}}
-  const api={LEARNING_KEY,rows,careRecords,needs,zoneNeeds,notifications,alerts,facts,contributions,basics,completedLearning,completeLearning,requiresLearning,learningPending};
+  const api={LEARNING_KEY,REPORTS_KEY,CHECK_OFFERS_KEY,rows,careRecords,needs,zoneNeeds,nextRequest,checkOffer,setCheckOffer,notifications,alerts,reportAlert,facts,contributions,basics,completedLearning,completeLearning,requiresLearning,learningPending};
   root.MewLinkRefine=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

@@ -4,7 +4,7 @@ This is the independent experiment created on 2026-11-03. Preserve the accepted 
 
 Unless the user explicitly requests otherwise, use only:
 
-- GitHub: `zby336/mewlink-experiments`, repository ID `1444108864`.
+- GitHub: `zby336/mewlink-prototype-v4` (renamed from `mewlink-experiments`), repository ID `1444108864`.
 - Vercel: `mewlink-experiments`, project ID `prj_8ennCAToI4d6FiFzmsOznsrFeBNo`.
 - Public website: `https://mewlink-experiments.vercel.app/`.
 - Figma: file key `7fVfuvgTh5E7zMGg2sDwKj`.

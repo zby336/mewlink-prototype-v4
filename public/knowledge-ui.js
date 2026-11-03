@@ -18,8 +18,19 @@
       this.shadowRoot.innerHTML='<style>'+css+'</style><section><div class="label">Latest observation</div><div class="card"><div class="top"><span class="muted">'+(r?esc(D.stamp(r.occurredAt)+' · '+D.author(r.authorId)):'No confirmed observation')+'</span>'+(r?'<span class="tag">'+(concern?'Needs follow-up':r.next?'Next visit noted':'Recorded')+'</span>':'')+'</div><p class="observation">'+esc(r?.observed||'No observation recorded yet.')+'</p>'+(r?.uncertain&&!/^(?:This is an observation, not a diagnosis|Caregiver observation, not a diagnosis)\.?$/i.test(r.uncertain.trim())?'<p class="muted">Uncertain: '+esc(r.uncertain)+'</p>':'')+'<p class="muted">Caregiver observation, not a diagnosis</p></div></section>';}
   }
   class NextCare extends DataView{
-    render(){const id=this.getAttribute('cat-id'),s=D.suggestions(id),open=this.shadowRoot.querySelector('details')?.open;
-      this.shadowRoot.innerHTML='<style>'+css+logCSS+'</style><section><div class="label">For the next caregiver</div><div class="card next"><div class="top"><span></span><span class="badge">MewAI '+aiIcon+'</span></div><ul>'+s.items.map(x=>'<li>'+esc(x.text)+'</li>').join('')+'</ul><p class="muted">Based on records updated '+esc(s.updatedAt?D.stamp(s.updatedAt):'— no dated records')+'</p><details '+(open?'open':'')+'><summary>View sources ('+s.sources.length+')</summary><p class="muted">Suggestions organise saved care notes and selected guidance using local rules. No generative model is connected.</p>'+sourcesHTML(s.sources)+'</details><slot></slot></div></section>';}
+    constructor(){
+      super();this.offerError='';
+      this.shadowRoot.addEventListener('click',e=>{
+        if(!e.target.closest('[data-offer]'))return;
+        const id=this.getAttribute('cat-id'),R=window.MewLinkRefine;
+        const result=R.setCheckOffer(id,!R.checkOffer(id));
+        this.offerError=result.ok?'':result.error;this.render();
+        this.shadowRoot.querySelector('[data-offer]')?.focus({preventScroll:true});
+      });
+    }
+    render(){const id=this.getAttribute('cat-id'),s=D.suggestions(id),open=this.shadowRoot.querySelector('details')?.open,R=window.MewLinkRefine,request=R?.nextRequest(id),offered=!!R?.checkOffer(id);
+      const offerCSS='.offer{width:100%;min-height:46px;border:1px solid #C4D2BC;border-radius:14px;background:#E2EADB;color:#3E5A36;font-size:16px;font-weight:700;padding:10px 16px;touch-action:manipulation;transition:background .14s ease}.offer:active,.offer[aria-pressed=true]{background:#D1DFC7}.offer:focus-visible{outline:3px solid #B8862A}.offer-error{color:#9A4A26;font-size:13px}@media(prefers-reduced-motion:reduce){.offer{transition:none}}';
+      this.shadowRoot.innerHTML='<style>'+css+logCSS+offerCSS+'</style><section><div class="label">For the next caregiver</div><div class="card next"><div class="top"><span></span><span class="badge">MewAI '+aiIcon+'</span></div><ul>'+s.items.map(x=>'<li>'+esc(x.text)+'</li>').join('')+'</ul><p class="muted">Based on records updated '+esc(s.updatedAt?D.stamp(s.updatedAt):'— no dated records')+'</p><details '+(open?'open':'')+'><summary>View sources ('+s.sources.length+')</summary><p class="muted">Suggestions organise saved care notes and selected guidance using local rules. No generative model is connected.</p>'+sourcesHTML(s.sources)+'</details>'+(request?'<button type="button" class="offer" data-offer aria-pressed="'+offered+'">'+(offered?'Offered · Undo':'Offer to check')+'</button>'+(offered?'<p class="muted" role="status">Added to your Follow-up list.</p>':''):'')+(this.offerError?'<p class="offer-error" role="alert">'+esc(this.offerError)+'</p>':'')+'</div></section>';}
   }
   class ObservationLog extends DataView{
     render(){
@@ -33,14 +44,65 @@
     }
   }
   const feedCSS=`.heading{padding:0 20px;display:flex;justify-content:space-between;gap:8px;align-items:center}.heading h2{font:500 24px Newsreader,serif;margin:0}.feed-note{padding:4px 20px}.post{padding:16px 20px;border-bottom:1px solid #EFE8DC;display:flex;flex-direction:column;gap:10px}.avatar{width:36px;height:36px;border-radius:50%;background:#F1EADF;color:#5E4D40;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none}.post img{width:100%;aspect-ratio:1;object-fit:cover;border-radius:20px}.post h3{font:700 15px 'Atkinson Hyperlegible',sans-serif;margin:0}.post p{font-size:15px}.actions{display:flex;align-items:center;gap:12px;flex-wrap:nowrap}.actions a{margin-left:auto;display:inline-flex;align-items:center;justify-content:flex-end;white-space:nowrap;min-height:44px;padding:0;font-size:14px}.actions button{padding:0;white-space:nowrap;flex-shrink:0;font-size:14px}.actions button{background:transparent;border:0;min-height:44px;color:#5C4636;font-weight:700}.comment{margin-top:8px;padding:10px 12px;border-radius:12px;background:#F1ECE2}.comment-form{display:flex;gap:6px;margin-top:10px}.comment-form input{min-width:0;flex:1;padding:10px;border:1px solid #E0D5C3;border-radius:14px}.comment-form button{min-height:44px;border:0;background:#E3AE45;border-radius:14px;padding:0 12px}dialog{padding:0;border:0;border-radius:28px 28px 0 0;width:min(100vw,440px);max-width:100vw;max-height:calc(100dvh - 12px);margin:auto auto 0;background:#FBF8F1;color:#33261D;overflow:hidden}dialog::backdrop{background:rgba(42,31,24,.38)}.share-sheet{max-height:calc(100dvh - 12px);display:flex;flex-direction:column}.share-head{padding:16px 22px;display:flex;justify-content:space-between;align-items:center}.share-body{padding:0 22px 18px;overflow:auto;min-height:0;display:flex;flex-direction:column;gap:14px}.share-body textarea,.share-body select{width:100%;padding:12px;border:1px solid #E0D5C3;border-radius:14px;background:white}.share-foot{padding:12px 22px calc(16px + env(safe-area-inset-bottom,0px));border-top:1px solid #E8DFD1}.share-foot button{width:100%}.error{color:#9A4A26;font-size:14px}`;
+  const pullCSS='.feed-surface{background:#EEF1E8;border:0;border-radius:22px;padding:14px 0 6px}.heading h2{flex:1;min-width:0;line-height:1.1}.feed-tools{display:flex;align-items:center;gap:6px;flex:none}.feed-tools .secondary{font-size:14px;padding:8px 10px}.refresh-button{border:0;background:transparent;color:#526B48;width:36px;min-height:44px;font-size:25px;line-height:1;border-radius:50%}.refresh-button:active{background:#DDE4D3}.refresh-button:disabled{opacity:.5}.pull-indicator{display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden;color:#526B48;font-size:12px;transition:height .15s ease}.refresh-icon{display:inline-block;font-size:20px}.pull-indicator[aria-busy=true] .refresh-icon{animation:mewFeedSpin .8s linear infinite}.post{border-color:#DDE3D5}.post:last-of-type{border-bottom:0}.post img{-webkit-user-drag:none;user-select:none}.avatar{background:#FAF6EF}.refresh-button:focus-visible{outline:3px solid #B8862A}@keyframes mewFeedSpin{to{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.pull-indicator{transition:none}.refresh-icon{animation:none!important}}';
   class SocialFeed extends HTMLElement{
-    constructor(){super();this.attachShadow({mode:'open'});this.openComments=new Set();this.commentDrafts={};this.shareDraft={text:'',catId:'',photo:false};this.refresh=()=>{if(!this.shadowRoot.querySelector('dialog')?.open)this.render();};}
-    connectedCallback(){this.render();window.addEventListener('mewlink-data-changed',this.refresh);window.addEventListener('storage',this.refresh);}
-    disconnectedCallback(){window.removeEventListener('mewlink-data-changed',this.refresh);window.removeEventListener('storage',this.refresh);}
+    constructor(){
+      super();this.attachShadow({mode:'open'});this.openComments=new Set();this.commentDrafts={};this.shareDraft={text:'',catId:'',photo:false};
+      this.refresh=()=>{if(!this.shadowRoot.querySelector('dialog')?.open&&!this.refreshing)this.render();};
+      this.touchStart=e=>{if(e.touches.length!==1){this.cancelPull();return;}this.startPull(e.touches[0],e.composedPath()[0]);};
+      this.touchMove=e=>{if(e.touches.length!==1){this.cancelPull();return;}this.movePull(e.touches[0],e);};
+      this.touchEnd=()=>this.endPull();this.touchCancel=()=>this.cancelPull();
+      this.pointerStart=e=>{if(e.pointerType==='mouse'&&e.button===0)this.startPull(e,e.composedPath()[0]);};
+      this.pointerMove=e=>{if(e.pointerType==='mouse')this.movePull(e,e);};
+      this.pointerEnd=e=>{if(e.pointerType==='mouse')this.endPull();};
+    }
+    connectedCallback(){
+      this.render();window.addEventListener('mewlink-data-changed',this.refresh);window.addEventListener('storage',this.refresh);
+      this.addEventListener('touchstart',this.touchStart,{passive:true});this.addEventListener('touchmove',this.touchMove,{passive:false});this.addEventListener('touchend',this.touchEnd);this.addEventListener('touchcancel',this.touchCancel);
+      this.addEventListener('pointerdown',this.pointerStart);window.addEventListener('pointermove',this.pointerMove,{passive:false});window.addEventListener('pointerup',this.pointerEnd);window.addEventListener('pointercancel',this.touchCancel);
+    }
+    disconnectedCallback(){
+      window.removeEventListener('mewlink-data-changed',this.refresh);window.removeEventListener('storage',this.refresh);
+      this.removeEventListener('touchstart',this.touchStart);this.removeEventListener('touchmove',this.touchMove);this.removeEventListener('touchend',this.touchEnd);this.removeEventListener('touchcancel',this.touchCancel);
+      this.removeEventListener('pointerdown',this.pointerStart);window.removeEventListener('pointermove',this.pointerMove);window.removeEventListener('pointerup',this.pointerEnd);window.removeEventListener('pointercancel',this.touchCancel);
+      clearTimeout(this.refreshTimer);clearTimeout(this.resetTimer);this.gesture=null;
+    }
+    scrollParent(){let p=this.parentElement;while(p){if(/auto|scroll/.test(getComputedStyle(p).overflowY)&&p.scrollHeight>p.clientHeight)return p;p=p.parentElement;}return document.scrollingElement;}
+    startPull(point,target){
+      if(this.refreshing||this.shadowRoot.querySelector('dialog')?.open||this.scrollParent()?.scrollTop>1||target.closest?.('button,a,input,textarea,select,summary'))return;
+      this.gesture={x:point.clientX,y:point.clientY,distance:0,active:false};
+    }
+    movePull(point,event){
+      const g=this.gesture;if(!g)return;
+      const dx=Math.abs(point.clientX-g.x),dy=point.clientY-g.y;
+      if(this.scrollParent()?.scrollTop>1||dy<0||(dx>12&&dx>dy)){this.cancelPull();return;}
+      if(dy<10){g.distance=Math.max(0,dy);if(g.active)this.pullVisual(0,'');return;}
+      if(dy<dx*1.2)return;
+      if(event.cancelable)event.preventDefault();g.active=true;g.distance=dy;
+      this.pullVisual(Math.min(72,dy*.5),dy>=100?'Release to refresh':'Pull down to refresh');
+    }
+    endPull(){const ready=this.gesture?.active&&this.gesture.distance>=100;this.cancelPull();if(ready)this.refreshFeed();}
+    cancelPull(){this.gesture=null;if(!this.refreshing)this.pullVisual(0,'');}
+    pullVisual(height,message,busy=false){
+      const panel=this.shadowRoot.querySelector('.pull-indicator');if(!panel)return;
+      panel.style.height=height+'px';panel.setAttribute('aria-busy',String(busy));
+      const label=panel.querySelector('.pull-status');if(label.textContent!==message)label.textContent=message;
+    }
+    refreshFeed(){
+      if(this.refreshing||this.shadowRoot.querySelector('dialog')?.open)return false;
+      clearTimeout(this.resetTimer);this.cancelPull();this.refreshing=true;this.pullVisual(48,'Refreshing…',true);
+      this.shadowRoot.querySelector('[data-action="refresh"]').disabled=true;
+      this.refreshTimer=setTimeout(()=>{
+        if(!this.isConnected)return;this.refreshing=false;this.refreshStatus='You’re up to date';this.render();
+        this.resetTimer=setTimeout(()=>{this.refreshStatus='';this.pullVisual(0,'');},1400);
+      },300);
+      return true;
+    }
     render(){
-      this.shadowRoot.innerHTML='<style>'+css+feedCSS+'</style><section aria-label="Social Feed"><div class="heading"><h2>From the circle</h2><button class="secondary" data-action="share">Share update</button></div>'+D.posts().map(p=>'<article class="post" data-post="'+esc(p.id)+'"><header class="row"><span class="avatar">'+esc(p.initials)+'</span><div><h3>'+esc(p.author)+' · '+esc(p.catName)+'</h3><p class="muted">'+esc(D.stamp(p.at))+'</p></div></header>'+(p.photo?'<img src="'+esc(p.photo)+'" alt="'+esc(p.catName)+' — community update" loading="lazy">':'')+'<p>'+esc(p.text)+'</p><div class="actions"><button data-action="like" aria-pressed="'+p.liked+'">'+(p.liked?'♥':'♡')+' Like · '+p.likeCount+'</button><button data-action="comment" aria-expanded="'+this.openComments.has(p.id)+'">Comment · '+p.comments.length+'</button>'+(p.catIds[0]?'<a class="plain" href="'+esc(M.profileHref(p.catIds[0]))+'">Cat profile</a>':'')+'</div>'+(this.openComments.has(p.id)?'<section aria-label="Comments">'+p.comments.map(c=>'<div class="comment"><b>'+esc(c.author)+'</b><p>'+esc(c.text)+'</p><span class="muted">'+esc(D.stamp(c.at))+'</span></div>').join('')+'<form class="comment-form" data-comment="'+esc(p.id)+'"><input aria-label="Write a comment" maxlength="1000" placeholder="Write a comment" value="'+esc(this.commentDrafts[p.id]||'')+'"><button type="submit">Post comment</button></form></section>':'')+'</article>').join('')+'</section><dialog aria-label="Share update"><form class="share-sheet"><header class="share-head"><b>Share update</b><button type="button" class="plain" data-action="cancel-share">Cancel</button></header><div class="share-body"><p class="muted">Publish only when you choose Share. Posts are saved in this browser.</p><label>Related cat<select name="cat" aria-label="Related cat"><option value="">Choose a cat</option>'+M.allCats().map(c=>'<option value="'+esc(c.id)+'" '+(this.shareDraft.catId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></label><textarea name="text" aria-label="Share update text" rows="4" maxlength="2000" placeholder="What would you like the circle to know?">'+esc(this.shareDraft.text)+'</textarea><label><input name="photo" type="checkbox" '+(this.shareDraft.photo?'checked':'')+'> Attach this cat’s photo</label><p class="muted">A social post does not create a confirmed care record.</p><p class="error" role="status"></p></div><footer class="share-foot"><button class="primary" type="submit">Share to the circle</button></footer></form></dialog>';
+      this.shadowRoot.innerHTML='<style>'+css+feedCSS+pullCSS+'</style><section class="feed-surface" aria-label="Social Feed"><div class="heading"><h2>From the circle</h2><div class="feed-tools"><button class="refresh-button" data-action="refresh" aria-label="Refresh posts" title="Pull down or click to refresh">↻</button><button class="secondary" data-action="share">Share update</button></div></div><div class="pull-indicator" role="status" aria-live="polite" aria-busy="false" style="height:'+(this.refreshStatus?36:0)+'px"><span class="refresh-icon" aria-hidden="true">↻</span><span class="pull-status">'+esc(this.refreshStatus||'')+'</span></div>'+D.posts().map(p=>'<article class="post" data-post="'+esc(p.id)+'"><header class="row"><span class="avatar">'+esc(p.initials)+'</span><div><h3>'+esc(p.author)+' · '+esc(p.catName)+'</h3><p class="muted">'+esc(D.stamp(p.at))+'</p></div></header>'+(p.photo?'<img src="'+esc(p.photo)+'" alt="'+esc(p.catName)+' — community update" loading="lazy">':'')+'<p>'+esc(p.text)+'</p><div class="actions"><button data-action="like" aria-pressed="'+p.liked+'">'+(p.liked?'♥':'♡')+' Like · '+p.likeCount+'</button><button data-action="comment" aria-expanded="'+this.openComments.has(p.id)+'">Comment · '+p.comments.length+'</button>'+(p.catIds[0]?'<a class="plain" href="'+esc(M.profileHref(p.catIds[0]))+'">Cat profile</a>':'')+'</div>'+(this.openComments.has(p.id)?'<section aria-label="Comments">'+p.comments.map(c=>'<div class="comment"><b>'+esc(c.author)+'</b><p>'+esc(c.text)+'</p><span class="muted">'+esc(D.stamp(c.at))+'</span></div>').join('')+'<form class="comment-form" data-comment="'+esc(p.id)+'"><input aria-label="Write a comment" maxlength="1000" placeholder="Write a comment" value="'+esc(this.commentDrafts[p.id]||'')+'"><button type="submit">Post comment</button></form></section>':'')+'</article>').join('')+'</section><dialog aria-label="Share update"><form class="share-sheet"><header class="share-head"><b>Share update</b><button type="button" class="plain" data-action="cancel-share">Cancel</button></header><div class="share-body"><p class="muted">Publish only when you choose Share. Posts are saved in this browser.</p><label>Related cat<select name="cat" aria-label="Related cat"><option value="">Choose a cat</option>'+M.allCats().map(c=>'<option value="'+esc(c.id)+'" '+(this.shareDraft.catId===c.id?'selected':'')+'>'+esc(c.name)+'</option>').join('')+'</select></label><textarea name="text" aria-label="Share update text" rows="4" maxlength="2000" placeholder="What would you like the circle to know?">'+esc(this.shareDraft.text)+'</textarea><label><input name="photo" type="checkbox" '+(this.shareDraft.photo?'checked':'')+'> Attach this cat’s photo</label><p class="muted">A social post does not create a confirmed care record.</p><p class="error" role="status"></p></div><footer class="share-foot"><button class="primary" type="submit">Share to the circle</button></footer></form></dialog>';
       this.shadowRoot.onclick=e=>{const b=e.target.closest('[data-action]');if(!b)return;const action=b.dataset.action,id=b.closest('[data-post]')?.dataset.post;
-        if(action==='share')this.shadowRoot.querySelector('dialog').showModal();
+        if(action==='share'&&!this.refreshing)this.shadowRoot.querySelector('dialog').showModal();
+        if(action==='refresh')this.refreshFeed();
         if(action==='cancel-share')this.shadowRoot.querySelector('dialog').close();
         if(action==='like'){if(!D.toggleLike(id))window.alert('Could not save the like on this device.');}
         if(action==='comment'){this.openComments.has(id)?this.openComments.delete(id):this.openComments.add(id);this.render();}

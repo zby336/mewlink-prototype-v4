@@ -76,7 +76,7 @@
             </div>
           </div>
         </div>
-        <a href="#careupdate" onClick="{{ startTigerCare }}" style="position:absolute;left:24px;right:24px;bottom:100px;text-decoration:none;height:56px;border:none;border-radius:28px;background:#E3AE45;color:#33261D;font:700 17px 'Atkinson Hyperlegible',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><span style="font-size:22px;line-height:1;font-weight:400">+</span>Add update</a>
+        <button type="button" class="mew-add-update" onClick="{{ startTigerCare }}" style="position:absolute;left:24px;right:24px;bottom:100px;text-decoration:none;height:56px;border:none;border-radius:28px;background:#E3AE45;color:#33261D;font:700 17px 'Atkinson Hyperlegible',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer"><span style="font-size:22px;line-height:1;font-weight:400">+</span>Add update</button>
         <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
           <div style="position:absolute;inset:0;z-index:5;background:rgba(51,38,29,.28);display:flex;flex-direction:column;justify-content:flex-end">
             <div onClick="{{ closeHelp }}" style="flex:1"></div>
@@ -172,7 +172,7 @@
             </div>
           </div>
           <mew-latest-observation cat-id="tiger"></mew-latest-observation>
-          <mew-next-care cat-id="tiger"><button onClick="{{ toggleTigerOffer }}" style="height:46px;border-radius:14px;background:#3B2A20;border:none;color:#FFFBF3;font:700 16px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;white-space:nowrap" style-active="background:#5A4334">{{ tigerOfferCta }}</button></mew-next-care>
+          <mew-next-care cat-id="tiger"></mew-next-care>
           <div style="display:flex;flex-direction:column;gap:12px">
             <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:700;color:#6B5847">Photo diary</span><a href="#diary" style="height:44px;display:flex;align-items:center;font-size:15px;font-weight:700;color:#5C4636">View all →</a></div>
             <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
@@ -187,7 +187,7 @@
           </div>
           <div style="display:flex;flex-direction:column;gap:12px"><span style="font-size:15px;font-weight:700;color:#6B5847">Observation log</span><mew-observation-log cat-id="tiger"></mew-observation-log></div>
         </div>
-        <a href="#careupdate" onClick="{{ startTigerCare }}" style="position:absolute;left:24px;right:24px;bottom:100px;text-decoration:none;height:56px;border:none;border-radius:28px;background:#E3AE45;color:#33261D;font:700 17px 'Atkinson Hyperlegible',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 18px rgba(140,100,24,.18)"><span style="font-size:22px;line-height:1;font-weight:400">+</span>Add update</a>
+        <button type="button" class="mew-add-update" onClick="{{ startTigerCare }}" style="position:absolute;left:24px;right:24px;bottom:100px;text-decoration:none;height:56px;border:none;border-radius:28px;background:#E3AE45;color:#33261D;font:700 17px 'Atkinson Hyperlegible',sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;box-shadow:0 6px 18px rgba(140,100,24,.18)"><span style="font-size:22px;line-height:1;font-weight:400">+</span>Add update</button>
         <sc-if value="{{ photoOpen }}" hint-placeholder-val="{{ false }}">
           <div onClick="{{ closePhoto }}" style="position:absolute;inset:0;z-index:6;background:rgba(30,22,17,.92);display:flex;flex-direction:column;justify-content:center;gap:16px;padding:0 16px;cursor:zoom-out">
             <div role="img" aria-label="Photo" style="height:420px;border-radius:18px;background:center/contain no-repeat url({{ photoUrl }})"></div>
@@ -616,7 +616,9 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;}}">
 class Base extends DCLogic {
-  state = { tigerOffer: false, photo: null, note: null, claimed: false, filter: 'All', searchOpen: false, helpOpen: false, helpSent: false, helpText: '' };
+  componentDidMount(){this.onCareChange=()=>this.forceUpdate();for(const ev of ['mewlink-data-changed','storage','focus'])addEventListener(ev,this.onCareChange);}
+  componentWillUnmount(){for(const ev of ['mewlink-data-changed','storage','focus'])removeEventListener(ev,this.onCareChange);}
+  state = { photo: null, note: null, claimed: false, filter: 'All', searchOpen: false, helpOpen: false, helpSent: false, helpText: '' };
   renderVals() {
     const tags = {
       'Needs attention': ['#F6E1D5', '#9A4A26'],
@@ -659,7 +661,7 @@ class Base extends DCLogic {
       { who: 'Ravi', when: '7:40am · Zone B', text: 'Fed Oyen and Milo. Both ate well and look relaxed.', ...tg('Fed') },
     ];
     const cq = id => 'https://images.unsplash.com/' + id + '?w=200&h=200&fit=crop&crop=top&q=70&auto=format';
-    const catData = window.MewLinkCare.allCats().map(c=>{const r=window.MewLinkData.observations(c.id)[0];return {name:c.name,photo:window.MewLinkCare.thumbnail(c),when:r?window.MewLinkData.stamp(r.occurredAt):'No dated observation',last:r?window.MewLinkData.author(r.authorId)+': '+r.observed:c.last,t:c.id==='tiger'?'Follow-up':c.id==='kopi'?'Handover':c.id==='ash'?'Not seen recently':null,follow:window.MewLinkRefine.needs(c.id)[0]?.label||''};});
+    const catData = window.MewLinkCare.allCats().map(c=>{const r=window.MewLinkData.observations(c.id)[0],offered=!!window.MewLinkRefine.checkOffer(c.id);return {name:c.name,isFollowUp:c.id==='tiger'||offered,photo:window.MewLinkCare.thumbnail(c),when:r?window.MewLinkData.stamp(r.occurredAt):'No dated observation',last:r?window.MewLinkData.author(r.authorId)+': '+r.observed:c.last,t:c.id==='tiger'?'Follow-up':c.id==='kopi'?'Handover':c.id==='ash'?'Not seen recently':offered?'Follow-up':null,follow:offered?'You offered to check':window.MewLinkRefine.needs(c.id)[0]?.label||''};});
     const chData = {
       'need-help': { name: '#need-help', about: 'Members only · requests that need a hand', unread: 2, posts: [
         { who: 'Aisha', ini: 'AS', time: '7:12am', text: 'Can someone check on Tiger this morning? Small cut near his ear, I couldn’t get close enough to see well.', replies: [
@@ -740,7 +742,7 @@ class Base extends DCLogic {
     const allCats = catData;
     let fedM = {}; try { const o = JSON.parse(localStorage.getItem('mewlink-fed') || '{}'); if (o.d === new Date().toDateString()) fedM = o.fed || {}; } catch (e) {}
     const syncedCats = allCats.map(c => { const t = fedM[c.name.toLowerCase()]; return t ? { ...c, when: 'Fed ' + t, last: 'You: fed and shared a photo.', t: c.t === 'Not seen recently' ? null : c.t, fedNow: true } : c; });
-    const cats = syncedCats.filter(c => f === 'All' || c.t === f).map((c, i) => ({ ...c, ...(c.t ? tg(c.t) : {}), hasTag: !!c.t, whenFg: c.fedNow ? '#3E5A36' : '#7D6B5C', whenW: c.fedNow ? 700 : 400, open: () => { location.hash = window.MewLinkCare.profileHref(window.MewLinkCare.catIdForName(c.name)); }, divider: i ? '#E8DFD1' : 'transparent' }));
+    const cats = syncedCats.filter(c => f === 'All' || (f === 'Follow-up' ? c.isFollowUp : c.t === f)).map((c, i) => ({ ...c, ...(c.t ? tg(c.t) : {}), hasTag: !!c.t, whenFg: c.fedNow ? '#3E5A36' : '#7D6B5C', whenW: c.fedNow ? 700 : 400, open: () => { location.hash = window.MewLinkCare.profileHref(window.MewLinkCare.catIdForName(c.name)); }, divider: i ? '#E8DFD1' : 'transparent' }));
     const filters = ['All', 'Follow-up', 'Handover'].map(label => ({
       label, bg: f === label ? '#2A1F18' : '#FFFFFF', border: f === label ? '#2A1F18' : '#E2D7C6', fg: f === label ? '#FAF6EF' : '#2A1F18', weight: 700,
       pick: () => this.setState({ filter: label }),
@@ -778,15 +780,13 @@ class Base extends DCLogic {
     const diaryPreview = diaryRaw.slice(0, 3).map(d => ({ date: d.date, thumb: U(d.pid, 'w=240&h=240') }));
     const tigerUI = {
       logDiffer, logRest, diary, diaryPreview,
-      tigerOfferCta: this.state.tigerOffer ? 'Offered · Undo' : 'Offer to check',
-      toggleTigerOffer: () => this.setState(s => ({ tigerOffer: !s.tigerOffer })),
       openMainPhoto: () => this.setState({ photo: { url: big, caption: 'Tiger · ID photo' } }),
       photoOpen: !!this.state.photo, photoUrl: this.state.photo ? this.state.photo.url : '', photoCaption: this.state.photo ? this.state.photo.caption : '',
       closePhoto: () => this.setState({ photo: null }),
       noteOpen: !!nt, note: nt ? { ...nt, ...st(nt.status) } : {}, closeNote: () => this.setState({ note: null }),
     };
     const promptsF = prompts.map((p, i) => ({ ...p, border: this.state.askPick === i ? '#C9A65A' : '#EDE5D7', fill: () => this.setState({ askInput: p.text, askPick: i, askPickText: p.text }) }));
-    return { startTigerCare: () => { sessionStorage.setItem('mewlink-care-target','tiger'); window.MewLinkData.beginDraft({catId:'tiger',origin:'profile'}); }, catCount: 12 + added.filter(c => !c.sighting).length, ...askUI, ...outreachUI, ...threadUI, ...tigerUI, searchOpen, searchBtnBg: searchOpen ? '#FBE7BA' : 'transparent', toggleSearch: () => this.setState(s => ({ searchOpen: !s.searchOpen })), follow, attentionText, ...top, claimTop, ...helpUI, updates, cats, channels, filters, prompts: promptsF, showNotes: this.props.showNotes ?? true };
+    return { startTigerCare: () => { sessionStorage.setItem('mewlink-care-target','tiger'); window.MewLinkData.beginDraft({catId:'tiger',origin:'profile'}); location.hash='careupdate'; }, catCount: 12 + added.filter(c => !c.sighting).length, ...askUI, ...outreachUI, ...threadUI, ...tigerUI, searchOpen, searchBtnBg: searchOpen ? '#FBE7BA' : 'transparent', toggleSearch: () => this.setState(s => ({ searchOpen: !s.searchOpen })), follow, attentionText, ...top, claimTop, ...helpUI, updates, cats, channels, filters, prompts: promptsF, showNotes: this.props.showNotes ?? true };
   }
 }
 

@@ -23,6 +23,22 @@ test('fresh demo Kopi coverage request is visible despite a recent feeding recor
 test('asking to learn a food preference is not a recorded food preference',()=>{const {D}=setup();const r=note(D,{observed:'Visited Tiger briefly.',next:'Confirm the food preference with the caregiver.'});const s=D.suggestions('tiger',{now,records:[r]});assert(s.items.some(x=>/Food preference is not recorded/.test(x.text)));assert(!s.items.some(x=>x.type==='recorded-fact'));});
 test('self-resolved latest observation does not raise an active ear alert',()=>{const {D,R}=setup();const resolved=note(D,{observed:'Tiger ear healed; no concern remains.',next:''});assert.equal(R.alerts({now,records:[resolved]}).length,0);const earlier=note(D,{id:'ear-old',occurredAt:new Date(now-86400000).toISOString(),observed:'Small cut near one ear.',next:'Check the ear.'});assert.equal(R.alerts({now,records:[resolved,earlier]}).length,0);});
 
+test('alert reports require a real current alert and a nonempty explanation, without modifying care or social data',()=>{
+ const {D,R,data}=setup(),records=[note(D,{observed:'A small cut near one ear.',next:'Check the ear.'})],options={now,records};
+ const alert=R.alerts(options)[0],before=JSON.stringify(records);
+ assert.equal(R.reportAlert({alertId:'made-up',message:'Wrong'},options).ok,false);
+ assert.equal(R.reportAlert({alertId:alert.id,message:'   '},options).ok,false);
+ assert.equal(R.reportAlert({alertId:alert.id,message:'x'.repeat(1001)},options).ok,false);
+ const result=R.reportAlert({alertId:alert.id,message:'  The photo belongs to a different visit.  '},options);
+ assert.equal(result.ok,true);assert.equal(result.report.message,'The photo belongs to a different visit.');assert.equal(result.report.recordId,records[0].id);
+ assert.equal(JSON.parse(data.get(R.REPORTS_KEY)).length,1);assert.equal(JSON.stringify(records),before);assert.equal(data.has(D.KEYS.social),false);assert.equal(data.has(D.KEYS.updates),false);
+});
+
+test('report storage failures preserve the alert and do not claim success',()=>{
+ const {D,R,block}=setup(),options={now,records:[note(D,{observed:'A small cut near one ear.'})]};const alert=R.alerts(options)[0];block();
+ const result=R.reportAlert({alertId:alert.id,message:'Please check the date.'},options);assert.equal(result.ok,false);assert.match(result.error,/still here/);assert.equal(R.alerts(options)[0].id,alert.id);
+});
+
 test('catalogue expands to twelve unique profiles with explicit TNR metadata and consistent sources',()=>{const {M,D,R}=setup();const cats=M.allCats();assert.equal(cats.length,12);assert.equal(new Set(cats.map(c=>c.id)).size,12);assert(cats.every(c=>typeof c.tnrOk==='boolean'&&c.funFact));const zone=R.zoneNeeds('Zone A');assert.deepEqual(Array.from(zone,c=>c.catId),['tiger','mochi','biscuit','pepper']);assert.equal(zone.find(c=>c.catId==='biscuit').tnrOk,false);for(const c of cats.slice(6)){const rows=D.observations(c.id);assert(rows.length);assert(rows.every(r=>r.source==='demo'&&r.circleId===D.CIRCLE));assert(R.facts(c.id).length<85);}});
 test('specific requests get action labels; a generic observation is not a pending need',()=>{const {D,R}=setup();assert.equal(R.needs('tiger',{now,records:[note(D,{next:'Add an observation.'})],careRecords:[]}).length,0);assert.equal(R.needs('tiger',{now,records:[note(D,{next:'Check the ear.'})],careRecords:[]})[0].label,'Ear check');assert.equal(R.needs('tiger',{now,records:[note(D,{next:'Record how much he eats.'})],careRecords:[]})[0].label,'Appetite check');});
 test('adding fixtures preserves local care, drafts, social posts and privacy preferences',()=>{const {M,D,data}=setup();const entries=[[M.KEYS.records,JSON.stringify([{id:'saved-user-care'}])],[D.KEYS.updates,JSON.stringify([{id:'saved-user-note'}])],[D.KEYS.draft,JSON.stringify({id:'draft-in-progress'})],[D.KEYS.social,JSON.stringify({posts:[{id:'user-post'}]})],[M.KEYS.prefs,JSON.stringify({hiddenIds:['aisha'],seed:'stable'})]];for(const [k,v]of entries)data.set(k,v);M.allRecords();D.demo();M.allRecords();D.demo();for(const [k,v]of entries)assert.equal(data.get(k),v);assert.equal(D.demo().observations.filter(r=>r.id==='fixture-observation-mochi').length,1);assert.equal(M.allRecords().filter(r=>r.id==='fixture-care-mochi').length,1);});

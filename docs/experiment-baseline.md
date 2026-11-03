@@ -4,6 +4,8 @@ The user requested an independent experimental copy of GitHub, Vercel and Figma,
 
 ## Active experiment targets
 
+Update on 2026-11-03: the same repository was renamed to `mewlink-prototype-v4` (ID unchanged). Its current URL is https://github.com/zby336/mewlink-prototype-v4. The links and verification below describe the initial copy checkpoint.
+
 - Repository: https://github.com/zby336/mewlink-experiments (ID `1444108864`), branch `main`.
 - Vercel project: `mewlink-experiments`, ID `prj_8ennCAToI4d6FiFzmsOznsrFeBNo`.
 - Website: https://mewlink-experiments.vercel.app/.

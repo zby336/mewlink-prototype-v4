@@ -144,7 +144,7 @@
     const now=options.now??Date.now(),rows=observations(id,{...options,now}),recent=rows.filter(r=>M.daysSince(r.occurredAt,now)<=30),items=[],used=new Map();
     const add=(text,sourceIds=[],type='guidance')=>{if(items.length<4&&!items.some(x=>x.text===text)){items.push({text,sourceIds,type});sourceIds.forEach(key=>{const r=recent.find(r=>r.id===key),g=GENERAL.find(g=>g.id===key);if(r)used.set(key,sourceFor(r));else if(g)used.set(key,guideSource(g));});}};
     const openNeeds=root.MewLinkRefine?.needs(id,{...options,now});
-    const request=openNeeds?recent.find(r=>openNeeds.some(n=>n.sourceIds.includes(r.id))):recent.find(r=>r.next);
+    const request=root.MewLinkRefine?.nextRequest?root.MewLinkRefine.nextRequest(id,{...options,now}):openNeeds?recent.find(r=>openNeeds.some(n=>n.sourceIds.includes(r.id))):recent.find(r=>r.next);
     if(request)add('Recorded next visit: '+request.next.trim(),[request.id],'recorded-request');
     else if(!recent.length)add('Recent care details are unknown. Ask the circle what needs checking before you visit.',[],'unknown');
     const food=recent.find(r=>{const text=r.details||r.observed||'';return /\b(prefers?|usually eats?|favourite food is|favorite food is|usual food is|food preference:)\b|喜欢吃|平时吃/i.test(text)&&!(/\b(unknown|unconfirmed|not recorded|not known|not sure|ask|confirm|whether|does not|doesn't)\b|不确定|未知|未记录/.test(text.toLowerCase()));});

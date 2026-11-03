@@ -1,18 +1,47 @@
-# MewLink — experimental working copy
+# MewLink — approved experimental prototype
 
-This independent experiment was created on 2026-11-03 from the accepted MewLink version, with the original Git history preserved. The application source and all 60 deployment files are unchanged from approved production deployment `dpl_G7w2fPbaZ1fZk7S5AZHg2cZguow3`. Only experiment links and documentation changed. See [experiment targets and the preserved baseline](docs/experiment-baseline.md).
+This repository contains the complete source, tests, build scripts and built website for the UX11 version approved on 2026-11-03.
 
-Earlier development reports describe the synchronization status at their respective checkpoints. This approved release supersedes their “not yet pushed” status.
+- Website: https://mewlink-experiments.vercel.app/
+- Repository: https://github.com/zby336/mewlink-prototype-v4 (formerly `mewlink-experiments`; repository ID `1444108864` is unchanged).
+- Experimental Figma copy: https://www.figma.com/design/7fVfuvgTh5E7zMGg2sDwKj. The recent website refinements have **not** been applied to Figma; existing design differences remain.
+- Approved website snapshot: `dpl_4jFh3aALVjU74WFduQvmdPJFcjfS`, Vercel project `prj_8ennCAToI4d6FiFzmsOznsrFeBNo`.
 
-Experimental website: https://mewlink-experiments.vercel.app/
+See [the accepted release and verification](docs/approved-ux11.md) and [the 60-file website manifest](docs/approved-ux11-files.json). Source is in `src/` and `public/`; `dist/` contains the exact accepted Windows build. Immutable fonts and vendor resources are included in the portable bundle. No dependency install is needed for the current scripts.
 
-Repository: https://github.com/zby336/mewlink-experiments
+```sh
+npm test
+npm run build
+npm run dev
+```
 
-Figma experimental copy: https://www.figma.com/design/7fVfuvgTh5E7zMGg2sDwKj
+Node.js 22 or later is required. Vercel builds with `npm run build` and serves `dist/`, as configured in `vercel.json`. Gzip OS header bytes may differ between Windows and Linux; decoded application contents remain the same.
 
-Figma is a native duplicate of the entire existing editable design, including its components and screen map. The source Figma contained earlier designs; its pre-existing differences from the approved website are also present in this duplicate. Duplication does not claim those differences have been resolved.
+## Current functionality
 
-Future experiments belong only in this repository, Vercel project `prj_8ennCAToI4d6FiFzmsOznsrFeBNo` and the new Figma file. The original repository, `mewlink-design-copy` Vercel project and Figma file remain untouched backups. Historical reports below refer to the original accepted version.
+- Care: compact zone needs, notifications, recommendations, sourced alerts and Care Basics.
+- Twelve cat profiles, corrected photo framing, fixed **+ Add update**, fading caregivers, privacy preferences and a single visible eligible crown.
+- Sage **Offer to check** for sourced next-visit requests; persistent offers appear in Follow-up, support Undo and do not count as completed care.
+- Existing complete care-record flow: drafts, editable review, explicit cat confirmation, final-save-only state updates and separate optional sharing.
+- Ask Mew and next-care suggestions share local source retrieval, dates, uncertainty handling and selected care references.
+- Community: muted sage feed, local likes/comments/sharing and pull-to-refresh, with existing Group Chats below.
+- Compact alert-report form, responsive footer/safe-area behavior, consistent avatar rings and reduced-motion support.
+
+## Prototype boundaries
+
+Care notes, posts, drafts, offers, reports and preferences are stored in the browser; they are not shared across devices or users. Fixture data is sample data, not verified real-world events. There is no account backend, database, operator report-review service or generative LLM/RAG service. Ask Mew and suggestions use local rules and sourced retrieval. Browser-local records are not included in GitHub.
+
+The accepted backup repository `zby336/mewlink-prototype-v3`, backup website `mewlink-design-copy.vercel.app`, original Netlify and earlier Figma remain separate and untouched.
+
+## Development history
+
+The experiment was copied from the accepted backup on 2026-11-03, preserving its Git history. This approved synchronization includes all subsequent UX07–UX11 code changes. Earlier delivery reports describe historical states; their notes about deferred GitHub synchronization are superseded by this release. Figma synchronization remains deferred.
+
+- [Original experiment baseline](docs/experiment-baseline.md)
+- [UX07 delivery notes](docs/ux07-delivery.md)
+- [UX08 delivery notes](docs/ux08-delivery.md)
+
+The sections below describe earlier accepted versions and their boundaries at that time.
 
 ## Approved website release — 2026-10-28
 

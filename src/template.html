@@ -146,9 +146,9 @@ class Component extends DCLogic {
       askmew: [{ d: 'M11 3l2.1 6.2L19.5 11l-6.4 2L11 19.5 8.9 13 2.5 11l6.4-1.8z' }, { d: 'M19 2.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z', fill: 1 }],
     };
     const labels = { today: 'Care', cats: 'Cats', community: 'Community', askmew: 'Ask Mew' };
-    const tabs = Object.keys(icons).map(k => { const on = k === r, c = on ? '#2A1F18' : '#8F7E6F';
+    const tabs = Object.keys(icons).map(k => { const on = k === r || (k === 'cats' && !!catId), c = on ? '#2A1F18' : '#8F7E6F';
       return { href: '#' + k, label: labels[k], c, w: on ? 700 : 400, pill: on ? '#FBE7BA' : 'transparent', icon: e('svg', { width: 24, height: 24, viewBox: '0 0 24 24' }, P(c, icons[k])) }; });
-    return { isCat: !!catId, catId, careCatId: sessionStorage.getItem('mewlink-care-target') || 'tiger', tabs, showTabs: ['today', 'cats', 'community', 'askmew'].includes(r), route: r, isHome: home.includes(r), isApp: app.includes(r), isCare: r === 'careupdate', isUpload: r === 'upload', isMemory: r === 'memory', isAddCat: r === 'addcat' };
+    return { isCat: !!catId, catId, careCatId: sessionStorage.getItem('mewlink-care-target') || 'tiger', tabs, showTabs: !!catId || ['today', 'cats', 'community', 'askmew'].includes(r), route: r, isHome: home.includes(r), isApp: app.includes(r), isCare: r === 'careupdate', isUpload: r === 'upload', isMemory: r === 'memory', isAddCat: r === 'addcat' };
   }
 }
 </script>

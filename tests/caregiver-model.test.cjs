@@ -75,13 +75,33 @@ test('care counts count distinct qualifying records and retain latest fading dat
  assert.equal(result.rows.find(r=>r.id==='ravi').crown,false);
 });
 
-test('equal most-active counts crown ties without sorting by count',()=>{
+test('equal most-active counts crown only the latest caregiver without ranking the avatar order',()=>{
  const rows=[rec('aisha',1,'feeding',{id:'a1'}),rec('aisha',2,'water',{id:'a2'}),rec('ravi',3,'feeding',{id:'r1'}),rec('ravi',4,'feeding',{id:'r2'}),rec('wei',1,'water',{id:'w1'})];
  const result=M.activity(rows,'tiger',{now,prefs:{seed:'shared-view'}});
- assert.deepEqual(result.rows.filter(r=>r.crown).map(r=>r.id).sort(),['aisha','ravi']);
+ assert.deepEqual(result.rows.filter(r=>r.crown).map(r=>r.id),['aisha']);
  const changed=M.activity([...rows,rec('wei',2,'water',{id:'w2'}),rec('wei',3,'feeding',{id:'w3'})],'tiger',{now,prefs:{seed:'shared-view'}});
  assert.deepEqual(changed.rows.map(r=>r.id),result.rows.map(r=>r.id));
  assert.deepEqual(changed.rows.filter(r=>r.crown).map(r=>r.id),['wei']);
+});
+
+test('identical count and time select a stable single crown, independent of record input order',()=>{
+ const rows=[rec('ravi',1),rec('aisha',1),rec('wei',1)];
+ const leader=list=>M.activity(list,'tiger',{now}).rows.filter(r=>r.crown).map(r=>r.id);
+ assert.deepEqual(leader(rows),['aisha']);assert.deepEqual(leader(rows.slice().reverse()),['aisha']);
+});
+
+test('one visible leader stays inside the five-avatar stack without exposing private identities',()=>{
+ const people=Object.fromEntries(Array.from({length:8},(_,i)=>['p'+i,{name:'Person '+i,initials:String(i),color:'#eee',publicIdentity:true}]));
+ const base=Object.keys(people).map(id=>rec(id,2)),prefs={seed:'overflow'};
+ const outside=M.activity(base,'tiger',{now,people,prefs}).rows.at(-1).id;
+ const result=M.activity([...base,rec(outside,1)],'tiger',{now,people,prefs});
+ assert.equal(result.avatars.length,5);assert.equal(result.avatars.filter(r=>r.crown).length,1);assert.equal(result.avatars.find(r=>r.crown).id,outside);
+});
+
+test('profile photos remove the top-only crop without rewriting user image URLs',()=>{
+ for(const cat of M.CATS){const url=new URL(M.profilePhoto(cat));assert.notEqual(url.searchParams.get('crop'),'top');assert.equal(url.pathname,new URL(cat.photo).pathname);if(!['milo','biscuit'].includes(cat.id)){assert.equal(url.searchParams.get('crop'),'entropy');assert.equal(url.searchParams.get('h'),'600');}else assert.equal(url.searchParams.has('h'),false);}
+ assert.equal(M.profilePhotoPosition(M.CATS.find(c=>c.id==='milo')),'50% 45%');assert.equal(M.profilePhotoPosition(M.CATS.find(c=>c.id==='biscuit')),'50% 30%');
+ assert.equal(M.profilePhoto({photo:'data:image/jpeg;base64,abc'}),'data:image/jpeg;base64,abc');
 });
 
 test('circle and note visibility filters apply before care counts or crowns',()=>{

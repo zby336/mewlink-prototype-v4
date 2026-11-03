@@ -46,6 +46,15 @@
     const edge=Math.round(Math.max(80,Math.min(400,Number(size)||180)));
     return photo.split('?')[0]+'?w='+edge+'&h='+edge+'&fit=crop&crop=entropy&q=80&auto=format';
   }
+  function profilePhoto(value){
+    const photo=typeof value==='string'?value:value?.photo||'';
+    if(!/^https:\/\/images\.unsplash\.com\/photo-[^/?]+(?:\?|$)/.test(photo))return photo;
+    // Texture-based crops favour the body in these two portraits. Keep the
+    // original image and position its face in CSS instead of baking in a crop.
+    if(/photo-(?:1683989903370-9fe4f7c8e0c7|1573865526739-10659fec78a5)(?:\?|$)/.test(photo))return photo.split('?')[0]+'?w=960&q=85&auto=format';
+    return photo.split('?')[0]+'?w=960&h=600&fit=crop&crop=entropy&q=85&auto=format';
+  }
+  function profilePhotoPosition(value){const photo=typeof value==='string'?value:value?.photo||'';return photo.includes('photo-1573865526739-10659fec78a5')?'50% 30%':photo.includes('photo-1683989903370-9fe4f7c8e0c7')?'50% 45%':'center';}
   function sgDay(value) {
     const ms = new Date(value).getTime();
     return Number.isFinite(ms) ? Math.floor((ms+SG_OFFSET)/DAY) : NaN;
@@ -78,16 +87,17 @@
     }
     const hidden=new Set(prefs.hiddenIds||[]);
     const publicRows=[]; let privateCount=0,hiddenCount=0;
-    const mostRecords=Math.max(0,...counts.values());
+    const leader=[...latest.keys()].sort((a,b)=>counts.get(b)-counts.get(a)||latest.get(b)-latest.get(a)||a.localeCompare(b))[0];
     for(const [id,time] of latest){
       const p=people[id];
       if(!p || p.publicIdentity===false || (id===CURRENT_USER && prefs.selfPrivate)){ privateCount++; continue; }
       if(prefs.hideAll || hidden.has(id)){hiddenCount++;continue;}
       const days=daysSince(time,now);
-      publicRows.push({id,name:p.name,initials:p.initials,color:p.color,lastAt:new Date(time).toISOString(),days,relative:relativeTime(time,now),opacity:opacityForDays(days),careCount:counts.get(id),crown:counts.get(id)===mostRecords});
+      publicRows.push({id,name:p.name,initials:p.initials,color:p.color,lastAt:new Date(time).toISOString(),days,relative:relativeTime(time,now),opacity:opacityForDays(days),careCount:counts.get(id),crown:id===leader});
     }
     publicRows.sort((a,b)=>stableHash((prefs.seed||'demo')+catId+a.id)-stableHash((prefs.seed||'demo')+catId+b.id)||a.id.localeCompare(b.id));
-    const avatars=publicRows.slice(0,5);
+    const avatars=publicRows.slice(0,5),crowned=publicRows.find(r=>r.crown);
+    if(crowned&&!avatars.includes(crowned)){avatars[4]=crowned;avatars.sort((a,b)=>publicRows.indexOf(a)-publicRows.indexOf(b));}
     return {count:latest.size,rows:publicRows,avatars,overflow:Math.max(0,latest.size-avatars.length),privateCount,hiddenCount};
   }
   function read(key,fallback) { try { return JSON.parse(root.localStorage.getItem(key))??fallback; } catch(_){ return fallback; } }
@@ -164,7 +174,7 @@
     if(event.shiftKey && root.document.activeElement===first){event.preventDefault();last?.focus();}
     if(!event.shiftKey && root.document.activeElement===last){event.preventDefault();first?.focus();}
   });
-  const api={DAY,KEYS,PEOPLE,CATS,CURRENT_USER,VALID_CARE,sgDay,daysSince,opacityForDays,relativeTime,stableHash,activity,demoRecords,allRecords,preferences,savePreferences,recordCare,allCats,catIdForName,profileHref,syncFeedingModal,thumbnail};
+  const api={DAY,KEYS,PEOPLE,CATS,CURRENT_USER,VALID_CARE,sgDay,daysSince,opacityForDays,relativeTime,stableHash,activity,demoRecords,allRecords,preferences,savePreferences,recordCare,allCats,catIdForName,profileHref,syncFeedingModal,thumbnail,profilePhoto,profilePhotoPosition};
   root.MewLinkCare=api;
   if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

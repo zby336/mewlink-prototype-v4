@@ -149,7 +149,7 @@
                   <span class="mew-cat-note" style="font-size:15px;line-height:1.4;text-wrap:pretty">{{ c.note }}</span>
                 </div><span class="ml-tap-feedback" aria-hidden="true">✦</span>
               </a>
-              <button onClick="{{ c.feed }}" style="height:56px;border-radius:28px;border:none;background:{{ c.btnBg }};color:{{ c.btnFg }};font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer">{{ c.btnLabel }}</button>
+              <button class="mew-add-update" onClick="{{ c.feed }}" style="height:56px;border-radius:28px;border:none;background:{{ c.btnBg }};color:{{ c.btnFg }};font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer">{{ c.btnLabel }}</button>
             </div>
           </sc-for>
         </div>
@@ -193,7 +193,7 @@
 
 <sc-if value="{{ isCommunity }}" hint-placeholder-val="{{ false }}">
   <div data-screen-label="03 Community" style="height:100%;display:flex;flex-direction:column">
-    <div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:14px 0 16px;display:flex;flex-direction:column;gap:14px">
+    <div class="mew-community-scroll" style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:14px 0 16px;display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:0 20px">
         <div style="display:flex;flex-direction:column;gap:2px"><span style="font:500 30px/1.1 Newsreader,serif">Community</span><span style="font-size:14px;color:#7D6B5C">Toa Payoh circle · 18 members</span></div>
         <a href="#me" aria-label="My profile" style="width:44px;height:44px;border-radius:50%;background:#FBE7BA;color:#7A5410;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700">ML</a>
@@ -322,7 +322,7 @@ class Component extends DCLogic {
     const fedKeys = Object.keys(s.fed);
     const zone=s.a.zone||'Zone A';
     const stories=(window.MewLinkRefine?.zoneNeeds(zone)||[]).map(c=>({name:c.catName,photo:window.MewLinkCare.thumbnail(c.photo),href:window.MewLinkCare.profileHref(c.catId),tnrBg:c.tnrOk?'#E2EADB':'#F7DDD0',tnrLabel:c.tnrOk?'TNR done':'TNR not yet',sub:c.needs[0]?.label||''}));
-    const profileCats=window.MewLinkCare.allCats().map(c=>{const x=window.MewLinkRefine?.contributions(c.id)||{feeding:0,total:0,byKind:{}};const obs=x.byKind?.observation||0;const tnrOk=c.tnrOk===true;return {...c,photo:window.MewLinkCare.thumbnail(c),href:window.MewLinkCare.profileHref(c.id),tnrBg:tnrOk?'#5E7A55':'#F7DDD0',tnrLabel:tnrOk?'TNR done':'TNR not yet',summary:this.contributionSummary(x),hasCare:x.total>0||obs>0||(x.byKind?.tnr_support||0)>0};}).filter(c=>c.hasCare);
+    const profileCats=window.MewLinkCare.allCats().map(c=>{const x=window.MewLinkRefine?.contributions(c.id)||{feeding:0,total:0,byKind:{}};const obs=x.byKind?.observation||0;const tnrOk=c.tnrOk===true;return {...c,photo:window.MewLinkCare.thumbnail(c),href:window.MewLinkCare.profileHref(c.id),tnrBg:tnrOk?'#E2EADB':'#F7DDD0',tnrLabel:tnrOk?'TNR done':'TNR not yet',summary:this.contributionSummary(x),hasCare:x.total>0||obs>0||(x.byKind?.tnr_support||0)>0};}).filter(c=>c.hasCare);
     const base = [
       { id: 'r', who: 'Ravi', av: 'RK', cat: 'Oyen and Milo', time: '7:40am', zone: 'Zone B', stamp: '7:40am', pid: 'photo-1581536678522-afcf3257d780', caption: 'Both ate well. Milo finished first again.', likes: 4 },
       { id: 'a', who: 'Aisha', av: 'AS', cat: 'Tiger', time: 'Yesterday', zone: 'Zone A', stamp: '6:15pm', pid: 'photo-1675504661658-33940d979a6a', caption: 'Small cut near one ear. He let me come close.', likes: 7 },
