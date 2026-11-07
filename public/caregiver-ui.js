@@ -12,7 +12,7 @@ class Caregivers extends HTMLElement{
  disconnectedCallback(){window.removeEventListener('mewlink-care-changed',this.refresh);window.removeEventListener('storage',this.refresh);window.removeEventListener('focus',this.onFocus);document.removeEventListener('visibilitychange',this.onFocus);clearTimeout(this.dayTimer);this.shadowRoot.querySelector('dialog')?.close();}
  attributeChangedCallback(){if(this.isConnected)this.render();}
  scheduleDay(){clearTimeout(this.dayTimer);const delay=(M.sgDay(Date.now())+1)*M.DAY-8*3600000-Date.now()+100;this.dayTimer=setTimeout(()=>{this.render();this.scheduleDay();},Math.max(100,delay));}
- avatar(r){return '<span class="avatar'+(r.crown?' crowned':'')+'" aria-hidden="true" style="background:'+esc(r.color)+';opacity:'+r.opacity+'">'+esc(r.initials)+(r.crown?'<span class="crown" title="Most recorded care in 30 days; latest care breaks ties">'+crownIcon+'</span>':'')+'</span>';}
+ avatar(r){return '<span class="avatar'+(r.crown?' crowned':'')+'" aria-hidden="true" style="background:'+esc(r.color)+';opacity:'+r.opacity+'">'+(r.id===M.CURRENT_USER?'<mew-user-avatar style="width:100%;height:100%;--avatar-font:11px"></mew-user-avatar>':esc(r.initials))+(r.crown?'<span class="crown" title="Most recorded care in 30 days; latest care breaks ties">'+crownIcon+'</span>':'')+'</span>';}
  render(){
   const wasOpen=!!this.shadowRoot.querySelector('dialog')?.open;
   const focused=this.shadowRoot.activeElement?.getAttribute('data-action');

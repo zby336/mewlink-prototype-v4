@@ -11,12 +11,13 @@
   const source=r=>D.sourceFor(r);
   function rows(id,options={}){return D.observations(id,options).filter(r=>fresh(r,options.now??Date.now()));}
   function kindFor(text){
+    if(/\b(?:vet|veterinary|medical)\b/i.test(text))return 'vet_visit';
     if(/\bwater\b|\bbowl.*(?:clean|empty)|饮水|补水|水碗/i.test(text))return 'water';
     if(/\bcover\b|\bhandover\b|\baway\b|\btravel\b|交接|代喂/i.test(text))return 'cover';
     if(/\bfeed|\beat|\bfood\b|喂|食/i.test(text))return 'feeding';
     return 'observation';
   }
-  const labels={water:'Water check',cover:'Feeding cover',feeding:'Feeding check'};
+  const labels={water:'Water check',cover:'Feeding cover',feeding:'Feeding check',vet_visit:'Vet support'};
   function needLabel(text,kind){
     if(/\bear\b/i.test(text))return 'Ear check';
     if(/\bpaw\b/i.test(text))return 'Paw check';
@@ -34,7 +35,7 @@
     const history=rows(id,options),records=careRecords(options),seen=new Set(),out=[];
     for(const r of history){
       const text=String(r.next||'').trim();if(!text)continue;
-      const kind=kindFor(text),label=needLabel(text,kind);if(!label||seen.has(label))continue;seen.add(label);
+      const kind=r.careEvent?.type==='caregiver-away'?'cover':r.helpRequest?.kind==='medical'?'vet_visit':kindFor(text),label=needLabel(text,kind);if(!label||seen.has(label))continue;seen.add(label);
       // A completed later visit of the same kind resolves an earlier request. A saved
       // draft, sighting, or absence of feeding evidence never creates/resolves a need.
       const matchingCompletion=history.some(n=>time(n)>time(r)&&n.requestStatus==='completed'&&(n.resolvesRequestId===r.id||(Array.isArray(n.resolvedRequestIds)&&n.resolvedRequestIds.includes(r.id))));
@@ -49,6 +50,24 @@
   function zoneNeeds(zone,options={}){return M.allCats().filter(c=>c.zone===zone).map(c=>({catId:c.id,catName:c.name,photo:c.photo,tnrOk:c.tnrOk===true,zone:c.zone,needs:needs(c.id,options)})).filter(c=>c.needs.length);}
   // An offer is an intention tied to the currently sourced request, never care.
   const CHECK_OFFERS_KEY='mewlink-check-offers-v1';
+  const FOLLOWED_CATS_KEY='mewlink-followed-cats-v1';
+  function followedCatIds(){
+    const parse=key=>{try{const a=JSON.parse(root.localStorage.getItem(key)||'[]');return Array.isArray(a)?a:[];}catch(_){return [];}};
+    const catalogue=M.allCats(),known=new Set(catalogue.map(c=>c.id));
+    // Keep earlier selections without treating them as care, feeding or an offer.
+    const legacy=parse('mewlink-joined-cats').map(name=>catalogue.find(c=>c.name===name)?.id).filter(Boolean);
+    return [...new Set([...parse(FOLLOWED_CATS_KEY).filter(id=>known.has(id)),...legacy])];
+  }
+  function addFollowedCats(ids){
+    if(!Array.isArray(ids)||!ids.length||ids.some(id=>!cat(id)))return {ok:false,error:'Choose at least one cat from this circle.'};
+    try{
+      const raw=JSON.parse(root.localStorage.getItem(FOLLOWED_CATS_KEY)||'[]');if(!Array.isArray(raw))throw Error('Invalid follow storage');
+      const selected=[...new Set([...followedCatIds(),...ids])];
+      root.localStorage.setItem(FOLLOWED_CATS_KEY,JSON.stringify(selected));
+      if(root.dispatchEvent)root.dispatchEvent(new Event('mewlink-data-changed'));
+      return {ok:true,catIds:selected};
+    }catch(_){return {ok:false,error:'Could not save your selection. Please try again.'};}
+  }
   function nextRequest(id,options={}){
     const open=needs(id,options);
     return rows(id,options).find(r=>open.some(n=>n.sourceIds.includes(r.id)))||null;
@@ -106,7 +125,7 @@
   const REPORTS_KEY='mewlink-alert-reports-v1';
   function reportAlert({alertId,message},options={}){
     message=String(message||'').trim();
-    const alert=alerts(options).find(a=>a.id===alertId);
+    const alert=[...alerts(options),...(root.MewLinkCareFeed?.urgentItems(options)||[])].find(a=>a.id===alertId);
     if(!alert)return {ok:false,error:'Choose a current alert.'};
     if(!message)return {ok:false,error:'Tell us what seems wrong.'};
     if(message.length>1000)return {ok:false,error:'Keep your report within 1,000 characters.'};
@@ -149,6 +168,6 @@
   }
   function learningPending(){try{return root.localStorage.getItem('mewlink-learning-required')==='1'&&requiresLearning();}catch(_){return false;}}
   function completeLearning(){try{root.localStorage.setItem(LEARNING_KEY,JSON.stringify({version:1,completedAt:new Date().toISOString()}));return true;}catch(_){return false;}}
-  const api={LEARNING_KEY,REPORTS_KEY,CHECK_OFFERS_KEY,rows,careRecords,needs,zoneNeeds,nextRequest,checkOffer,setCheckOffer,notifications,alerts,reportAlert,facts,contributions,basics,completedLearning,completeLearning,requiresLearning,learningPending};
+  const api={LEARNING_KEY,REPORTS_KEY,CHECK_OFFERS_KEY,FOLLOWED_CATS_KEY,followedCatIds,addFollowedCats,rows,careRecords,needs,zoneNeeds,nextRequest,checkOffer,setCheckOffer,notifications,alerts,reportAlert,facts,contributions,basics,completedLearning,completeLearning,requiresLearning,learningPending};
   root.MewLinkRefine=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

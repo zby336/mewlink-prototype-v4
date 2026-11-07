@@ -23,7 +23,7 @@
       <div style="display:flex;flex-direction:column;gap:12px">
         <button onClick="{{ pickJoin }}" style="text-align:left;padding:18px;border-radius:20px;border:1px solid #EFE8DC;background:#FFFFFF;box-shadow:0 2px 10px rgba(80,50,20,0.06);display:flex;gap:14px;align-items:flex-start;cursor:pointer;font-family:inherit;color:inherit" style-active="background:#FBF3E4">
           <span style="width:48px;height:48px;flex:none;border-radius:14px;background:#FBE7BA;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24"><path d="M5 10V4.5l4 3h6l4-3V10a7 7 0 0 1-14 0z" fill="none" stroke="#8A6418" stroke-width="1.9" stroke-linejoin="round"></path><path d="M12 14.5v3M10.5 16h3" stroke="#8A6418" stroke-width="1.9" stroke-linecap="round"></path></svg></span>
-          <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 21px/1.2 Newsreader,serif">A cat in my area I’d like to feed</span><span style="font-size:15px;line-height:1.45;color:#6B5B4E;text-wrap:pretty">Pick from cats the circle already knows. They’ll show up in your Care cards.</span></span>
+          <span style="display:flex;flex-direction:column;gap:4px"><span style="font:600 21px/1.2 Newsreader,serif">Cats I’d like to follow up</span><span style="font-size:15px;line-height:1.45;color:#6B5B4E;text-wrap:pretty">Choose cats the circle already knows and add them to your Follow-up list.</span></span>
         </button>
         <button onClick="{{ pickSpot }}" style="text-align:left;padding:18px;border-radius:20px;border:1px solid #EFE8DC;background:#FFFFFF;box-shadow:0 2px 10px rgba(80,50,20,0.06);display:flex;gap:14px;align-items:flex-start;cursor:pointer;font-family:inherit;color:inherit" style-active="background:#FBF3E4">
           <span style="width:48px;height:48px;flex:none;border-radius:14px;background:#F6E1D5;display:flex;align-items:center;justify-content:center"><svg width="26" height="26" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6" fill="none" stroke="#9A4A26" stroke-width="1.9"></circle><path d="M15 15l5 5" stroke="#9A4A26" stroke-width="2.1" stroke-linecap="round"></path></svg></span>
@@ -37,7 +37,7 @@
     <div style="flex:1;min-height:0;overflow-y:auto;scrollbar-width:none;padding:8px 22px 120px;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;gap:18px">
       <div style="display:flex;flex-direction:column;gap:8px">
         <span style="font:500 30px/1.15 Newsreader,serif">Cats in your area</span>
-        <span style="font-size:16px;line-height:1.45;color:#6B5B4E;text-wrap:pretty">Choose the ones you can help feed. Their current caregivers will be told you’ve joined.</span>
+        <span style="font-size:16px;line-height:1.45;color:#6B5B4E;text-wrap:pretty">Choose the cats you’d like to follow up. Selected cats will appear in Cats → Follow-up.</span>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <sc-for list="{{ zoneTabs }}" as="z" hint-placeholder-count="4">
@@ -54,10 +54,10 @@
         </sc-for>
         <sc-if value="{{ noAreaCats }}" hint-placeholder-val="{{ false }}"><span style="padding:24px 0;text-align:center;font-size:15px;color:#8F7E6F">No cats logged in this zone yet.</span></sc-if>
       </div>
-      <button onClick="{{ pickSpot }}" style="justify-self:center;height:44px;padding:0 12px;border:none;background:transparent;font:700 15px 'Atkinson Hyperlegible',sans-serif;color:#9A6A12;cursor:pointer">Can’t find them? Report a new cat</button>
     </div>
     <div style="position:absolute;left:0;right:0;bottom:0;padding:14px 22px 28px;background:linear-gradient(rgba(250,246,239,0),#FAF6EF 30%)">
-      <button onClick="{{ joinDone }}" style="width:100%;height:54px;border-radius:16px;border:none;background:#33261D;opacity:{{ joinOp }};color:#FFFFFF;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(51,38,29,0.18)">{{ joinCta }}</button>
+      <sc-if value="{{ hasJoinError }}"><p role="alert" style="margin:0 0 10px;color:#9A4A26;font-size:14px">{{ joinError }}</p></sc-if>
+      <button onClick="{{ joinDone }}" disabled="{{ noPicked }}" style="width:100%;height:54px;border-radius:16px;border:none;background:#33261D;opacity:{{ joinOp }};color:#FFFFFF;font:700 17px 'Atkinson Hyperlegible',sans-serif;cursor:pointer;box-shadow:0 6px 16px rgba(51,38,29,0.18)">{{ joinCta }}</button>
     </div>
   </sc-if>
 
@@ -177,7 +177,7 @@
       <span style="flex:none;height:32px;padding:0 14px;border-radius:16px;background:{{ doneTagBg }};color:{{ doneTagFg }};font-size:14px;font-weight:700;display:flex;align-items:center">{{ doneTag }}</span>
       <div style="flex:1 0 0"></div>
       <div style="flex:none;width:100%;display:flex;flex-direction:column;gap:10px">
-        <a href="#today" style="height:54px;border-radius:16px;background:#33261D;color:#FFFFFF;font-size:17px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(51,38,29,0.18)">Back to Care</a>
+        <a href="{{ doneHref }}" onClick="{{ doneGo }}" style="height:54px;border-radius:16px;background:#33261D;color:#FFFFFF;font-size:17px;font-weight:700;text-decoration:none;display:flex;align-items:center;justify-content:center;box-shadow:0 6px 16px rgba(51,38,29,0.18)">{{ doneCta }}</a>
         <button onClick="{{ restart }}" style="height:50px;border-radius:16px;border:1px solid #E0D6C6;background:transparent;font:700 16px 'Atkinson Hyperlegible',sans-serif;color:#2A1F18;cursor:pointer">Add another cat</button>
       </div>
     </div>
@@ -232,10 +232,10 @@ class Component extends DCLogic {
     };
     const steps = { type: '', pick: 'Step 2 of 2', form: 'Step 2 of 3', match: 'Step 3 of 3', done: '' };
     const zoneTabs = ['Zone A', 'Zone B', 'Zone C', 'Zone D'].map(z => ({ label: z, bg: s.pz === z ? '#FBE7BA' : '#FFFFFF', border: s.pz === z ? '#D9A945' : '#E6DCCB', w: s.pz === z ? 700 : 400, pick: () => this.setState({ pz: z }) }));
-    const areaCats = known.filter(k => k.zone === s.pz).map(k => { const on = s.picked.includes(k.name);
-      return { ...k, need: k.need || 'Doing well', needFg: k.warn ? '#9A4A26' : '#4A6140', bg: on ? '#FFF8E8' : '#FFFFFF', border: on ? '#D9A945' : '#EFE8DC', checkBg: on ? '#33261D' : 'transparent', checkBd: on ? '#33261D' : '#D8CBB6',
-        toggle: () => this.setState(st => ({ picked: on ? st.picked.filter(x => x !== k.name) : [...st.picked, k.name] })) }; });
-    const pk = s.picked, pkName = pk.length === 1 ? pk[0] : pk.length === 2 ? pk.join(' and ') : pk.length + ' cats';
+    const areaCats = window.MewLinkCare.allCats().filter(k => k.zone === s.pz).map(k => { const on = s.picked.includes(k.id),following=window.MewLinkRefine.followedCatIds().includes(k.id),request=window.MewLinkRefine.needs(k.id)[0]?.label;
+      return { ...k, photo:window.MewLinkCare.thumbnail(k),meta:k.zone,need:following?'In your Follow-up list':request||'Community cat',needFg:request?'#9A4A26':'#4A6140', bg: on ? '#FFF8E8' : '#FFFFFF', border: on ? '#D9A945' : '#EFE8DC', checkBg: on ? '#33261D' : 'transparent', checkBd: on ? '#33261D' : '#D8CBB6',
+        toggle: () => this.setState(st => ({ picked: on ? st.picked.filter(x => x !== k.id) : [...st.picked, k.id],joinError:'' })) }; });
+    const pk = s.picked,pkNames=pk.map(id=>window.MewLinkCare.allCats().find(c=>c.id===id)?.name||id), pkName = pkNames.length === 1 ? pkNames[0] : pkNames.length === 2 ? pkNames.join(' and ') : pkNames.length + ' cats';
     const m = s.matched, injured = s.conds.includes('Injured');
     const reset = { step: 'type', pz: this.myZone, picked: [], kind: null, photo: null, name: '', coat: null, ear: null, zone: this.myZone, conds: [], note: '', tried: false, matched: null };
     return {
@@ -244,8 +244,8 @@ class Component extends DCLogic {
       back: () => { const prev = { pick: 'type', form: s.kind === 'join' ? 'pick' : 'type', match: 'form' }[s.step]; if (prev) this.setState({ step: prev }); else if (history.length > 1) history.back(); else location.hash = 'today'; },
       pickJoin: () => this.setState({ kind: 'join', step: 'pick' }), pickSpot: () => this.setState({ kind: 'spot', step: 'form' }),
       isPick: s.step === 'pick', zoneTabs, areaCats, noAreaCats: areaCats.length === 0,
-      joinOp: pk.length ? 1 : 0.5, joinCta: pk.length ? 'Feed ' + pkName : 'Choose at least one cat',
-      joinDone: () => { if (!pk.length) return; try { const prev = JSON.parse(localStorage.getItem('mewlink-joined-cats') || '[]'); localStorage.setItem('mewlink-joined-cats', JSON.stringify([...new Set([...prev, ...pk])])); } catch (e) {} this.setState({ step: 'done', matched: null }); },
+      joinOp: pk.length ? 1 : 0.5, noPicked:!pk.length,hasJoinError:!!s.joinError,joinError:s.joinError||'',joinCta: pk.length ? 'Add to Follow-up'+(pk.length>1?' · '+pk.length:'') : 'Choose at least one cat',
+      joinDone: () => { const result=window.MewLinkRefine.addFollowedCats(pk);if(!result.ok){this.setState({joinError:result.error});return;}this.setState({ step: 'done', matched: null,joinError:'' }); },
       formTitle: spot ? 'Tell us what you saw' : 'About this cat',
       nameLabel: spot ? 'Nickname · optional' : 'Name', namePh: spot ? 'Leave blank if you don’t know' : 'What do people call them?',
       notePh: spot ? 'e.g. Near the bin centre around 8pm, kept their distance' : 'e.g. Eats dry food only, comes out after 7pm',
@@ -257,10 +257,11 @@ class Component extends DCLogic {
       summary: name + ' · ' + (s.coat || '') + ' · ' + (s.zone || ''), matches,
       matchIntro: 'These cats are already known nearby. Matching keeps one record per cat.',
       confirmNew: finish,
-      donePhoto: s.kind === 'join' ? (known.find(k => k.name === pk[0]) || {}).photo : m ? m.photo : s.photo,
-      doneTitle: s.kind === 'join' ? 'You’re feeding ' + pkName : m ? 'Sighting added to ' + m.name : (spot ? 'Thanks for reporting' : name + ' is in the circle'),
-      doneBody: s.kind === 'join' ? 'They’ll appear in your Care cards when a feed is due. Exact spots unlock after 30 days of regular care.' : m ? 'Your photo and notes are on ' + m.name + '’s record. Caregivers will see it next time they check in.' : spot ? 'Members in ' + s.zone + ' will see this sighting. Once someone else sees the same cat, it becomes a full profile.' + (injured ? ' Because you marked them injured, it’s also posted to #need-help.' : '') : 'You’re listed as a caregiver. Others in ' + s.zone + ' can now see ' + name + ' and help with feeding.',
-      doneTag: s.kind === 'join' ? 'Caregiver · You' : m ? 'Updated' : (spot ? 'New sighting · 1 of 2 confirmations' : 'Caregiver · You'),
+      doneHref:s.kind==='join'?'#cats':'#today',doneCta:s.kind==='join'?'View Follow-up':'Back to Care',doneGo:()=>{if(s.kind==='join')sessionStorage.setItem('mewlink-open-follow-up','1');},
+      donePhoto: s.kind === 'join' ? window.MewLinkCare.thumbnail(window.MewLinkCare.allCats().find(c=>c.id===pk[0])) : m ? m.photo : s.photo,
+      doneTitle: s.kind === 'join' ? pkName + (pk.length===1?' is':' are') + ' in your Follow-up list' : m ? 'Sighting added to ' + m.name : (spot ? 'Thanks for reporting' : name + ' is in the circle'),
+      doneBody: s.kind === 'join' ? 'You can find '+(pk.length===1?'this cat':'these cats')+' in Cats → Follow-up.' : m ? 'Your photo and notes are on ' + m.name + '’s record. Caregivers will see it next time they check in.' : spot ? 'Members in ' + s.zone + ' will see this sighting. Once someone else sees the same cat, it becomes a full profile.' + (injured ? ' Because you marked them injured, it’s also posted to #need-help.' : '') : 'You’re listed as a caregiver. Others in ' + s.zone + ' can now see ' + name + ' and help with feeding.',
+      doneTag: s.kind === 'join' ? 'Following' : m ? 'Updated' : (spot ? 'New sighting · 1 of 2 confirmations' : 'Caregiver · You'),
       doneTagBg: spot && !m && s.kind !== 'join' ? '#F7E9C4' : '#E3EBDA', doneTagFg: spot && !m && s.kind !== 'join' ? '#7A5A12' : '#4A6140',
       restart: () => this.setState(reset),
     };

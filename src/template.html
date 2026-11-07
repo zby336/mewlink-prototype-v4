@@ -5,10 +5,13 @@
 <link rel="stylesheet" href="/feature-update.css">
 <script src="/caregiver-model.js"></script>
 <script src="/care-knowledge.js"></script>
+<script src="/user-avatar.js"></script>
 <script src="/refinement-model.js"></script>
 <script src="/home-refinement-ui.js"></script>
 <script src="/refinement-ui.js"></script>
 <script src="/knowledge-ui.js"></script>
+<script src="/care-feed-model.js"></script>
+<script src="/care-feed-ui.js"></script>
 <script src="/caregiver-ui.js"></script>
 <link rel="stylesheet" href="/update02.css">
 <link rel="stylesheet" href="/refinement.css">
@@ -134,7 +137,7 @@ class Component extends DCLogic {
   componentDidMount() { this.h = () => this.setState({ route: this.read() }); addEventListener('hashchange', this.h); }
   componentWillUnmount() { removeEventListener('hashchange', this.h); }
   renderVals() {
-    const home = ['welcome', 'join', 'learn', 'done', 'today', 'community', 'chat', 'me'];
+    const home = ['welcome', 'join', 'learn', 'done', 'today', 'community', 'chat', 'me', 'saved'];
     const app = ['cats', 'tiger', 'diary', 'review', 'thread', 'askmew'];
     let r = this.state.route; const catId = r.startsWith('cat/') ? decodeURIComponent(r.slice(4)) : ''; if (!catId && ![...home, ...app, 'careupdate', 'upload', 'memory', 'addcat'].includes(r)) r = 'welcome';
     const e = React.createElement;

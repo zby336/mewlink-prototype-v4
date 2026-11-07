@@ -14,7 +14,7 @@
     attributeChangedCallback(){if(this.isConnected)this.render();}
   }
   class Observation extends DataView{
-    render(){const id=this.getAttribute('cat-id'),r=D.observations(id)[0];const concern=r&&(/cut|ear|wound|swollen|not come|not seen/i.test(r.observed+' '+r.uncertain));
+    render(){const id=this.getAttribute('cat-id'),r=D.observations(id)[0];const concern=r&&(r.helpRequest?.urgency==='urgent'||/cut|ear|wound|swollen|not come|not seen/i.test(r.observed+' '+r.uncertain));
       this.shadowRoot.innerHTML='<style>'+css+'</style><section><div class="label">Latest observation</div><div class="card"><div class="top"><span class="muted">'+(r?esc(D.stamp(r.occurredAt)+' · '+D.author(r.authorId)):'No confirmed observation')+'</span>'+(r?'<span class="tag">'+(concern?'Needs follow-up':r.next?'Next visit noted':'Recorded')+'</span>':'')+'</div><p class="observation">'+esc(r?.observed||'No observation recorded yet.')+'</p>'+(r?.uncertain&&!/^(?:This is an observation, not a diagnosis|Caregiver observation, not a diagnosis)\.?$/i.test(r.uncertain.trim())?'<p class="muted">Uncertain: '+esc(r.uncertain)+'</p>':'')+'<p class="muted">Caregiver observation, not a diagnosis</p></div></section>';}
   }
   class NextCare extends DataView{

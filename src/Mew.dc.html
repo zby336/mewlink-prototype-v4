@@ -10,7 +10,7 @@
 <svg width="{{ size }}" height="{{ size }}" viewBox="18 10 100 100" style="display:block;overflow:visible">
   <defs><filter id="mewRough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="4" result="n"></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="1.8"></feDisplacementMap></filter></defs>
   <ellipse cx="54" cy="106" rx="24" ry="3" fill="#EDE3D1"></ellipse>
-  <g filter="url(#mewRough)" stroke-linecap="round" stroke-linejoin="round">
+  <g filter="{{ lineFilter }}" stroke-linecap="round" stroke-linejoin="round">
     <path d="M70 101 C88 105 100 96 98 74" fill="none" stroke="#4A382B" stroke-width="7.4"></path>
     <path d="M70 101 C88 105 100 96 98 74" fill="none" stroke="#FFF9EC" stroke-width="3.6"></path>
     <rect x="82" y="50" width="32" height="25" rx="11" fill="#FFF9EC" stroke="#4A382B" stroke-width="2.2"></rect>
@@ -32,7 +32,7 @@
   <text x="98" y="68" text-anchor="middle" font-family="Newsreader, Georgia, serif" font-size="16" font-weight="600" fill="#4A382B" opacity="{{ askOp }}">?</text>
 </svg>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:120},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hello&quot;,&quot;thinking&quot;,&quot;source&quot;,&quot;unsure&quot;],&quot;default&quot;:&quot;hello&quot;,&quot;tsType&quot;:&quot;'hello'|'thinking'|'source'|'unsure'&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:96,&quot;min&quot;:24,&quot;max&quot;:240,&quot;tsType&quot;:&quot;number&quot;}}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:120,&quot;height&quot;:120},&quot;mood&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;hello&quot;,&quot;thinking&quot;,&quot;source&quot;,&quot;unsure&quot;],&quot;default&quot;:&quot;hello&quot;,&quot;tsType&quot;:&quot;'hello'|'thinking'|'source'|'unsure'&quot;},&quot;size&quot;:{&quot;editor&quot;:&quot;int&quot;,&quot;default&quot;:96,&quot;min&quot;:24,&quot;max&quot;:240,&quot;tsType&quot;:&quot;number&quot;},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;soft&quot;,&quot;crisp&quot;],&quot;default&quot;:&quot;soft&quot;,&quot;tsType&quot;:&quot;'soft'|'crisp'&quot;}}">
 class Component extends DCLogic {
   renderVals() {
     const mood = this.props.mood ?? 'hello';
@@ -43,7 +43,7 @@ class Component extends DCLogic {
       unsure:   { ex1: 46, ex2: 60, ey: 40, mouth: 'M49 50 Q51 48 53 50 Q55 52 57 50' },
     }[mood] || {};
     const on = k => (mood === k ? 1 : 0);
-    return { ...m, size: this.props.size ?? 96,
+    return { ...m, size: this.props.size ?? 96, lineFilter:this.props.detail==='crisp'?'none':'url(#mewRough)',
       waveOp: on('hello'), hiOp: on('hello'), chinOp: on('thinking'), dotsOp: on('thinking'),
       docOp: on('source'), browOp: on('unsure'), askOp: on('unsure') };
   }

@@ -46,3 +46,41 @@ test('submitted onboarding answers and selected help survive reload without chan
 
 test('all eight home-cat and experience combinations route correctly and remove stale mandatory flags',()=>{for(const home of ['Yes','No'])for(const exp of ['New to this','Under 1 year','1–3 years','3+ years']){const {c,location,localStorage}=setup();localStorage.setItem('mewlink-learning-required','1');c.state.a={zone:'Zone A',home,exp};c.state.agree=true;c.renderVals().submitJoin();const required=home==='No'&&['New to this','Under 1 year'].includes(exp);assert.equal(location.hash,required?'learn':'done',home+' / '+exp);assert.equal(localStorage.getItem('mewlink-learning-required'),required?'1':null);assert.equal(localStorage.getItem('mewlink-care-basics-completed-v1'),null);}});
 test('both experience questions must be answered before join is submitted',()=>{const {c,location}=setup();c.state.a={zone:'Zone A',exp:'New to this'};c.state.agree=true;c.renderVals().submitJoin();assert.equal(location.hash,'#today');c.state.a.home='Yes';delete c.state.a.exp;c.renderVals().submitJoin();assert.equal(location.hash,'#today');});
+
+test('welcome collage never duplicates a photo, including the outgoing image during a crossfade',()=>{
+  const {c}=setup();assert.equal(new Set(c.tiles).size,c.tiles.length);
+  let before=[0,1,2].map(i=>c.collageIndex(i,0));
+  for(let tick=1;tick<=300;tick++){
+    const after=[0,1,2].map(i=>c.collageIndex(i,tick)),changed=after.map((value,i)=>value!==before[i]?i:-1).filter(i=>i>=0);
+    assert.equal(new Set(after).size,3);assert.equal(changed.length,1);assert(!before.includes(after[changed[0]]));before=after;
+  }
+});
+
+test('joining preserves every selected zone and invite/request status through basics, remount and refresh',()=>{
+  for(const mode of ['invite','request'])for(const zone of ['Zone A','Zone B','Zone C','Zone D']){
+    const {c,setLearned}=setup();c.state.mode=mode;c.state.a={zone,home:'No',exp:'New to this'};c.state.agree=true;c.renderVals().submitJoin();setLearned(true);
+    for(let reload=0;reload<2;reload++){
+      const done=new c.constructor({only:'done'});done.state.a={};const view=done.renderVals();
+      assert.equal(view.doneTitle,mode==='invite'?'You’re in '+zone:'Request sent');
+      if(mode==='invite')assert(!view.doneSub.includes(zone));else assert.match(view.doneSub,new RegExp(zone));
+    }
+  }
+});
+
+test('a damaged answers object does not hide the separately saved valid zone',()=>{
+  const {c,localStorage}=setup();localStorage.setItem('mewlink-zone','Zone D');localStorage.setItem('mewlink-profile-answers','invalid json');
+  const done=new c.constructor({only:'done'});assert.equal(done.state.a.zone,'Zone D');assert.equal(done.renderVals().doneTitle,'You’re in Zone D');
+});
+
+test('Join us and the optional invite path retain their distinct mode after navigation',()=>{
+  const {c,location}=setup();assert.equal(c.renderVals().inviteOpen,false);c.renderVals().toggleInvite();assert.equal(c.renderVals().inviteOpen,true);
+  c.renderVals().requestInvite();assert.equal(location.hash,'join');assert.equal(new c.constructor({only:'join'}).state.mode,'request');
+  c.renderVals().joinWithCode();assert.equal(new c.constructor({only:'join'}).state.mode,'invite');
+});
+
+test('Community searches channel names, history and current local messages without altering chats',()=>{
+ const {c,location}=setup();const data=JSON.stringify(c.chanData());let v=c.chat('community');assert.equal(v.channels.length,4);
+ v.onCommunitySearch({target:{value:' TIGER '}});v=c.chat('community');assert.deepEqual(v.channels.map(x=>x.name),['#need-help']);v.channels[0].open();assert.equal(location.hash,'chat');assert.equal(c.state.ch,'need-help');
+ c.state.communitySearch='no such message';assert.equal(c.chat('community').noChannels,true);c.state.sent={general:[{who:'You',text:'Check Luna later.',t:'Now'}]};c.state.communitySearch='luna';assert.deepEqual(c.chat('community').channels.map(x=>x.name),['#general']);
+ c.state.communitySearch='';assert.equal(c.chat('community').channels.length,4);assert.equal(JSON.stringify(c.chanData()),data);
+});

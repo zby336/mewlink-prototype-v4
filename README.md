@@ -1,13 +1,15 @@
 # MewLink — approved experimental prototype
 
-This repository contains the complete source, tests, build scripts and built website for the UX11 version approved on 2026-11-03.
+> Approved release — 2026-11-07: Care Home v1.7 removes the visible Care alerts heading and places refresh left of the header's Create (+) control. [Synchronization and Figma status](docs/approved-care-home-sync-2026-11-07.md) and [release verification](docs/care-header-refresh-2026-11-07.md). [Individual alert strips](docs/individual-alerts-2026-11-07.md), the [all-red palette](docs/alert-red-tones-2026-11-07.md), [profile photo upload and zone badges](docs/avatar-upload-2026-11-07.md), and [social/Community features](docs/care-social-2026-11-07.md) remain. Earlier reports describe their historical checkpoints. [Earlier redesign and backups](docs/care-home-2026-11-07.md).
+
+This repository contains the complete source, tests, build scripts and built website for Care Home v1.7 approved on 2026-11-07. The prior UX11 checkpoint is preserved on `backup/ux11-before-care-redesign-2026-11-07`.
 
 - Website: https://mewlink-experiments.vercel.app/
 - Repository: https://github.com/zby336/mewlink-prototype-v4 (formerly `mewlink-experiments`; repository ID `1444108864` is unchanged).
-- Experimental Figma copy: https://www.figma.com/design/7fVfuvgTh5E7zMGg2sDwKj. The recent website refinements have **not** been applied to Figma; existing design differences remain.
-- Approved website snapshot: `dpl_4jFh3aALVjU74WFduQvmdPJFcjfS`, Vercel project `prj_8ennCAToI4d6FiFzmsOznsrFeBNo`.
+- Experimental Figma copy: https://www.figma.com/design/7fVfuvgTh5E7zMGg2sDwKj?node-id=4006-85. Current Care capture was added; further synchronization and inspection were blocked by the Starter MCP tool-call limit. Other pages remain older designs, and this is not a complete Figma sync.
+- Approved website snapshot: `dpl_DEXU7gP58dMPubWcDDJ3fJWdfJT9`, Vercel project `prj_8ennCAToI4d6FiFzmsOznsrFeBNo`.
 
-See [the accepted release and verification](docs/approved-ux11.md) and [the 60-file website manifest](docs/approved-ux11-files.json). Source is in `src/` and `public/`; `dist/` contains the exact accepted Windows build. Immutable fonts and vendor resources are included in the portable bundle. No dependency install is needed for the current scripts.
+See [current release verification](docs/care-header-refresh-2026-11-07.md) and the [63-file website manifest](docs/care-header-refresh-2026-11-07-files.json). Source is in `src/` and `public/`; `dist/` contains the exact accepted Windows build. Immutable fonts and vendor resources are included in the portable bundle. No dependency install is needed for the current scripts.
 
 ```sh
 npm test
@@ -19,12 +21,13 @@ Node.js 22 or later is required. Vercel builds with `npm run build` and serves `
 
 ## Current functionality
 
-- Care: compact zone needs, notifications, recommendations, sourced alerts and Care Basics.
+- Care: individual prioritized red alert strips and a single-column portrait feed with albums, video and text cards, likes, comments, sharing, bookmarks, and refresh from the header or a pull gesture. The Create (+) menu contains posting and adding cats.
 - Twelve cat profiles, corrected photo framing, fixed **+ Add update**, fading caregivers, privacy preferences and a single visible eligible crown.
 - Sage **Offer to check** for sourced next-visit requests; persistent offers appear in Follow-up, support Undo and do not count as completed care.
 - Existing complete care-record flow: drafts, editable review, explicit cat confirmation, final-save-only state updates and separate optional sharing.
 - Ask Mew and next-care suggestions share local source retrieval, dates, uncertainty handling and selected care references.
-- Community: muted sage feed, local likes/comments/sharing and pull-to-refresh, with existing Group Chats below.
+- Community: Group Chats with search. The social feed is on Care.
+- Profile: saved posts, actual image-file selection for a browser-persisted avatar, care contributions and access to Care Basics.
 - Compact alert-report form, responsive footer/safe-area behavior, consistent avatar rings and reduced-motion support.
 
 ## Prototype boundaries

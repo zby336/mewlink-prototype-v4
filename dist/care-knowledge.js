@@ -69,7 +69,7 @@
   function updates(){const a=read(KEYS.updates,[]);return Array.isArray(a)?a:[];}
   function accessible(r,viewer=M.CURRENT_USER){return r.circleId===CIRCLE&&(r.visibility==='circle'||r.authorId===viewer);}
   function observations(id,options={}){
-    const rows=options.records||[...demo().observations,...updates()];const now=options.now??Date.now();
+    const rows=options.records||[...demo().observations,...updates(),...(root.MewLinkCareFeed?.scenarioRecords()||[])];const now=options.now??Date.now();
     return rows.filter(r=>r.catId===id&&r.identity==='confirmed'&&accessible(r,options.viewer)&&Number.isFinite(Date.parse(r.occurredAt))&&Date.parse(r.occurredAt)<=now).sort((a,b)=>Date.parse(b.occurredAt)-Date.parse(a.occurredAt));
   }
   function author(id){const p=M.PEOPLE[id];return !p||p.publicIdentity===false||(id===M.CURRENT_USER&&M.preferences().selfPrivate)?'Anonymous caregiver':p.name;}
@@ -168,14 +168,17 @@
   ];}
   function posts(){const s=social();return [...s.posts,...basePosts()].map(p=>({...p,liked:!!s.likes[p.id],likeCount:(p.likes||0)+(s.likes[p.id]?1:0),comments:s.comments[p.id]||[]}));}
   function toggleLike(id){const s=social();s.likes[id]=!s.likes[id];if(!write(KEYS.social,s))return false;emit();return true;}
-  function addComment(id,text){text=String(text||'').trim().slice(0,1000);if(!text||!posts().some(p=>p.id===id))return false;const s=social();s.comments[id]=[...(s.comments[id]||[]),{id:uid(),author:'You',text,at:nowISO()}];if(!write(KEYS.social,s))return false;emit();return true;}
-  function publishPost({text,catId,photo,recordId,id}){
+  function addComment(id,text){text=String(text||'').trim().slice(0,1000);if(!text||(!posts().some(p=>p.id===id)&&!root.MewLinkCareFeed?.hasPost(id)))return false;const s=social();s.comments[id]=[...(s.comments[id]||[]),{id:uid(),author:'You',text,at:nowISO()}];if(!write(KEYS.social,s))return false;emit();return true;}
+  function publishPost({text,catId,catIds,photo,media=[],recordId,id}){
     const s=social();id=id||'post-'+(recordId||uid());if(s.posts.some(p=>p.id===id))return {ok:true,duplicate:true};
     const record=recordId?updates().find(r=>r.id===recordId):null;
     if(recordId&&!record)return {ok:false,error:'Save the care update first.'};
-    const body=String(text??record?.observed??'').trim();if(!body)return {ok:false,error:'Add text before sharing.'};
-    const confirmedId=record?record.catId:catId;if(confirmedId&&!cat(confirmedId))return {ok:false,error:'Choose a cat from this circle.'};
-    const post={id,recordId:recordId||null,author:'You',initials:'ML',at:nowISO(),catIds:confirmedId?[confirmedId]:[],catName:cat(confirmedId)?.name||'Unconfirmed cat',photo:photo||record?.photo||'',text:body,likes:0};
+    if(!Array.isArray(media)||media.length>5||media.some(m=>!m||!['image','video'].includes(m.type)||typeof m.src!=='string'||!(/^(https?:|blob:)/i.test(m.src)||/^data:(image|video)\//i.test(m.src)))||(media.some(m=>m.type==='video')&&media.length!==1))return {ok:false,error:'Choose up to five photos or one video.'};
+    const body=String(text??record?.observed??'').trim();if(!body&&!media.length&&!photo)return {ok:false,error:'Add text or a photo before sharing.'};
+    if(catIds!==undefined&&(!Array.isArray(catIds)||catIds.some(value=>!cat(value))))return {ok:false,error:'Choose cats from this circle.'};
+    const selected=record?(record.catId?[record.catId]:[]):catIds!==undefined?[...new Set(catIds)]:catId?[catId]:[];
+    if(selected.some(value=>!cat(value)))return {ok:false,error:'Choose a cat from this circle.'};
+    const post={id,recordId:recordId||null,author:'You',initials:'ML',at:nowISO(),catIds:selected,catName:selected.map(value=>cat(value).name).join(' & ')||'Unconfirmed cat',photo:photo||record?.photo||media.find(m=>m.type==='image')?.src||'',media,text:body,likes:0};
     if(!write(KEYS.social,{...s,posts:[post,...s.posts]}))return {ok:false,error:'Could not share on this device. Please try again.'};emit();return {ok:true,post};
   }
   const api={KEYS,CIRCLE,GENERAL,read,stamp,cat,author,demo,updates,accessible,observations,sourceFor,feedingStatus,savedCareRecords,beginDraft,loadDraft,saveDraft,discardDraft,saveUpdate,arrangeWords,answer,suggestions,social,posts,toggleLike,addComment,publishPost};
