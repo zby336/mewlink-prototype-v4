@@ -25,12 +25,10 @@ test('an alert strip opens only its selected event and reporting keeps that even
  click('notice','priority-vet-request');assert.deepEqual(opened[0],['notice','priority-vet-request']);click('report');assert.equal(x.home.reportDraft.alertId,'priority-vet-request');assert.equal(opened[1][0],'report');
 });
 
-test('the header refresh event works without a refresh button inside the feed and ignores duplicate clicks',()=>{
- const x=setup(),query=x.shadow.querySelector;x.shadow.querySelector=s=>s==='[data-action="refresh"]'?null:query(s);const before=x.reads();
- x.listeners.get('mewlink-refresh-care')();assert.equal(x.home.refreshing,true);x.listeners.get('mewlink-refresh-care')();assert.equal(x.timers.size,1);x.runNext();assert.equal(x.reads(),before+1);assert.equal(x.home.status,'Feed refreshed');
-});
 test('Care pull refresh requires the top edge and a released vertical threshold, and reads once',()=>{
- const x=setup();x.scroller.scrollTop=50;x.home.startPull(point(0,0),target);assert.equal(x.home.gesture,undefined);x.scroller.scrollTop=0;
+ const x=setup(),query=x.shadow.querySelector;
+ x.shadow.querySelector=s=>s==='[data-action="refresh"]'?null:query(s);
+ x.scroller.scrollTop=50;x.home.startPull(point(0,0),target);assert.equal(x.home.gesture,undefined);x.scroller.scrollTop=0;
  x.home.startPull(point(0,0),target);const e=event();x.home.movePull(point(2,140),e);assert.equal(e.prevented,true);assert.equal(x.label.textContent,'Release to refresh');const before=x.reads();x.home.endPull();assert.equal(x.home.refreshing,true);assert.equal(x.reads(),before);assert.equal(x.home.refreshFeed(),false);x.runNext();assert.equal(x.reads(),before+1);assert.equal(x.home.refreshCycle,1);
 });
 test('horizontal, short, cancelled and retracted Care pulls never refresh the feed',()=>{

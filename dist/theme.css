@@ -1,0 +1,150 @@
+:root {
+  color-scheme: light;
+  --mew-page: #EEF3EB;
+  --mew-surface: #FCFDF9;
+  --mew-border: #CDD8CC;
+  --mew-ink: #25342C;
+  --mew-muted: #53655B;
+  --mew-primary: #315744;
+  --mew-primary-pressed: #264736;
+  --mew-selected: #D7E6D6;
+  --mew-subtle: #E5ECE1;
+  --mew-source: #3D596A;
+  --mew-source-bg: #E5EEF1;
+  --mew-zone: #5D4B68;
+  --mew-zone-bg: #EAE2EF;
+  --mew-pending: #755418;
+  --mew-pending-bg: #F1E7CA;
+  --mew-focus: #56725F;
+  --mew-on-primary: #FFFFFF;
+  --mew-danger: #793A34;
+  --mew-danger-bg: #F8E3DD;
+  --mew-danger-border: #DAA19B;
+}
+
+html {
+  color: var(--mew-ink);
+  background: var(--mew-page);
+  accent-color: var(--mew-primary);
+}
+
+:where(button, a, input, textarea, select, summary):focus-visible {
+  outline: 2px solid var(--mew-focus);
+  outline-offset: 2px;
+}
+
+.mew-answer {
+  border: 1px solid var(--mew-border);
+}
+
+.mew-answer-status {
+  align-self: flex-start;
+  padding: 4px 9px;
+  border-radius: 99px;
+  background: var(--mew-source-bg);
+  color: var(--mew-source);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mew-answer-status[data-status="confirmed"] {
+  background: var(--mew-selected);
+  color: var(--mew-primary);
+}
+
+.mew-answer-status[data-status="unconfirmed"],
+.mew-answer-status[data-status="conflict"] {
+  background: var(--mew-pending-bg);
+  color: var(--mew-pending);
+}
+
+.mew-answer-sources {
+  border-top: 1px solid var(--mew-border);
+  color: var(--mew-source);
+}
+
+.mew-answer-sources summary {
+  padding: 8px 0;
+  list-style: none;
+}
+
+.mew-answer-sources summary::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 7px;
+  vertical-align: 2px;
+  border: solid currentColor;
+  border-width: 1.5px 1.5px 0 0;
+  transform: rotate(45deg);
+}
+
+.mew-answer-sources[open] summary::before {
+  transform: translateY(-2px) rotate(135deg);
+}
+
+.mew-answer-scope,
+.mew-answer-sources .mew-source-entry {
+  margin: 0;
+  padding: 9px 11px;
+  border-radius: 10px;
+  background: var(--mew-source-bg);
+  color: var(--mew-source);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.mew-answer-sources .mew-source-entry + .mew-source-entry {
+  margin-top: 6px;
+}
+
+.mew-answer-sources .mew-source-entry a {
+  color: inherit;
+}
+
+.mew-draft-banner {
+  padding: 4px 12px;
+  border: 1px solid var(--mew-border);
+  border-radius: 14px;
+  background: var(--mew-pending-bg);
+}
+
+#tiger .mew-tiger-scroll {
+  gap: 12px !important;
+  padding-bottom: 12px !important;
+  scroll-padding-bottom: 12px;
+}
+
+.mew-tiger-scroll > * {
+  flex-shrink: 0;
+}
+
+.mew-tiger-scroll .mew-tiger-bio {
+  gap: 10px !important;
+}
+
+.mew-tiger-scroll [aria-label="Photo of Tiger"] {
+  height: clamp(155px, 21dvh, 195px) !important;
+}
+
+.mew-identity-labels .mew-profile-zone {
+  padding: 3px 9px;
+  border-radius: 99px;
+  background: var(--mew-zone-bg);
+  color: var(--mew-zone);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.mew-tiger-action {
+  flex: none;
+  padding: 10px 22px calc(12px + env(safe-area-inset-bottom, 0px));
+  background: var(--mew-page);
+}
+
+.mew-tiger-action .mew-add-update {
+  position: static !important;
+  width: 100%;
+  height: 48px !important;
+}
